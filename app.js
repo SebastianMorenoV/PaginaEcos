@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('product-grid');
     const searchInput = document.getElementById('search-input');
-    const apiUrl = 'http://localhost:8080/api/productos';
+    const apiUrl = 'http://ecos-backend-env.eba-p4pypvjh.us-east-2.elasticbeanstalk.com/api/productos';
 
     let allProducts = []; // Guardaremos una copia de todos los productos aquí
 
