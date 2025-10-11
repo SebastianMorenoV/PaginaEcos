@@ -1,0 +1,102 @@
+/* --- ESTILOS GENERALES Y FUENTES --- */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+.container {
+    padding: 20px 40px;
+}
+
+/* --- BARRA SUPERIOR (HEADER) --- */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.main-header h1 {
+    margin: 0;
+    font-size: 2em;
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+#search-input {
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    width: 300px;
+}
+
+.add-product-btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.add-product-btn:hover {
+    background-color: #333;
+}
+
+/* --- CUADRÍCULA DE PRODUCTOS (GRID) --- */
+.product-grid {
+    display: grid;
+    /* Esto es lo que hace la magia responsiva */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+}
+
+/* --- TARJETA DE PRODUCTO INDIVIDUAL --- */
+.product-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden; /* Para que la imagen no se salga de los bordes redondeados */
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card img {
+    width: 100%;
+    height: 250px; /* Altura fija para todas las imágenes */
+    object-fit: cover; /* Asegura que la imagen cubra el espacio sin deformarse */
+}
+
+.product-card h3 {
+    font-size: 1.1em;
+    margin: 15px 15px 5px 15px;
+    font-weight: 500;
+}
+
+.product-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 15px 15px 15px;
+    font-size: 0.9em;
+    color: #666;
+    margin-top: auto; /* Empuja este div al fondo de la tarjeta */
+}
+
+.price {
+    font-weight: 700;
+    color: #000;
+}
