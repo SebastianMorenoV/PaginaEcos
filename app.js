@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.querySelector('.close-btn');
 
     // --- Configuración del API ---
-    const baseApiUrl = 'http://localhost:8080'; 
+    const baseApiUrl = 'https://api.ecosapp.shop/api/productos'; 
 
     let allProducts = [];
 
