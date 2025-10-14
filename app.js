@@ -8,16 +8,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalProductIdInput = document.getElementById('modal-product-id');
     const modalQuantityInput = document.getElementById('modal-quantity');
     const modalPriceInput = document.getElementById('modal-price');
-    const storeSelectorContainer = document.getElementById('store-selector-container'); // <-- NUEVO
+    const storeSelectorContainer = document.getElementById('store-selector-container');
     const sellForm = document.getElementById('sell-form');
     const closeBtn = document.querySelector('.close-btn');
 
+    // Referencias a los nuevos elementos del panel de progreso
+    const progressBarInner = document.getElementById('progress-bar-inner');
+    const progressBarText = document.getElementById('progress-bar-text'); // <-- CAMBIO 1: Nueva referencia
+    const infoUltimoCiclo = document.getElementById('info-ultimo-ciclo');
+
     // --- Configuración del API ---
-    const baseApiUrl = 'https://api.ecosapp.shop'; // Cambia esto según tu configuración
+    const baseApiUrl = 'http://localhost:8080'; // Cambia esto según tu configuración
 
     let allProducts = [];
 
     // --- Funciones ---
+
+    // Función dedicada para actualizar la vista del progreso
+    const actualizarVistaProgreso = (datosProgreso) => {
+        if (!datosProgreso) return;
+
+        const progreso = datosProgreso.progresoActual || 0;
+        const porcentaje = (progreso / 1000) * 100;
+
+        // Actualizar barra (solo el ancho)
+        progressBarInner.style.width = `${porcentaje}%`;
+        
+        // <-- CAMBIO 2: Actualizamos el texto en el nuevo elemento span
+        progressBarText.textContent = `$${progreso.toFixed(2)} / $1000`;
+
+        // <-- CAMBIO 3: Actualizar texto informativo CON FECHA
+        if (datosProgreso.ventaQueCompletoCiclo) {
+            const venta = datosProgreso.ventaQueCompletoCiclo;
+            
+            // Formateamos la fecha para que sea legible
+            const fechaVenta = new Date(venta.fechaVenta);
+            const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric' };
+            const fechaFormateada = fechaVenta.toLocaleDateString('es-MX', opcionesFecha);
+
+            infoUltimoCiclo.textContent = `El último reparto se completó el ${fechaFormateada} con la venta #${venta.id} (Monto: $${venta.precioTotal.toFixed(2)}).`;
+        } else {
+            infoUltimoCiclo.textContent = `Aún no se ha completado el primer reparto. ¡Vamos por ello! 🚀`;
+        }
+    };
+
     const renderProducts = (productsToRender) => {
         grid.innerHTML = '';
         productsToRender.forEach(producto => {
@@ -49,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProducts(filteredProducts);
     };
 
-    // MODIFICADA: Ahora abre el modal y LUEGO carga las tiendas
     const openSellModal = async (productoId, productoNombre, defaultPrice) => {
         modalProductName.textContent = productoNombre;
         modalProductIdInput.value = productoId;
@@ -58,18 +91,15 @@ document.addEventListener('DOMContentLoaded', () => {
         storeSelectorContainer.innerHTML = '<p class="loading-stores">Cargando tiendas...</p>';
         modalOverlay.classList.remove('hidden');
 
-        // Hacemos la llamada al nuevo endpoint para obtener los inventarios
         try {
             const response = await fetch(`${baseApiUrl}/api/inventarios/producto/${productoId}`);
             if (!response.ok) throw new Error('No se pudieron cargar los inventarios.');
             
             const inventarios = await response.json();
             
-            // Construimos el selector de tiendas
             if (inventarios.length > 0) {
                 let selectHTML = '<select id="modal-store-select" required>';
                 inventarios.forEach(inv => {
-                    // Solo mostramos tiendas con stock
                     if (inv.cantidad > 0) {
                         selectHTML += `<option value="${inv.tienda.id}" data-max-stock="${inv.cantidad}">
                             ${inv.tienda.nombre} (Stock: ${inv.cantidad})
@@ -79,11 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectHTML += '</select>';
                 storeSelectorContainer.innerHTML = selectHTML;
 
-                // Ajustamos el máx. de cantidad según la tienda seleccionada
                 const storeSelect = document.getElementById('modal-store-select');
                 updateMaxQuantity();
                 storeSelect.addEventListener('change', updateMaxQuantity);
-
             } else {
                 storeSelectorContainer.innerHTML = '<p class="error-message">Este producto no está en ninguna tienda.</p>';
             }
@@ -93,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // Nueva función para actualizar el input de cantidad
     const updateMaxQuantity = () => {
         const storeSelect = document.getElementById('modal-store-select');
         if (storeSelect) {
@@ -128,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const datosVenta = {
             productoId: parseInt(productoId, 10),
-            tiendaId: parseInt(tiendaId, 10), // <-- AÑADIDO
+            tiendaId: parseInt(tiendaId, 10),
             cantidad: cantidad,
             precioVendido: precioVendido 
         };
@@ -144,10 +171,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return response.json();
         })
-        .then(ventaConfirmada => {
-            alert(`¡Venta registrada con éxito desde la tienda!`);
+        .then(datosProgreso => {
+            alert(`¡Venta registrada con éxito!`);
             closeSellModal();
-            updateProductInUI(productoId, cantidad);
+            const ventaRecienRegistrada = datosProgreso.ventaRecienRegistrada;
+            updateProductInUI(ventaRecienRegistrada.producto.id, ventaRecienRegistrada.cantidadVendida);
+            actualizarVistaProgreso(datosProgreso);
         })
         .catch(error => {
             console.error('Error al registrar la venta:', error);
@@ -160,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (productIndex > -1) {
             allProducts[productIndex].cantidad -= cantidadVendida;
         }
-        renderProducts(allProducts);
+        filterProducts();
     };
 
     // --- Asignación de Eventos ---
@@ -180,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sellForm.addEventListener('submit', handleSellSubmit);
 
     // --- Carga Inicial de Datos ---
+    
     fetch(`${baseApiUrl}/api/productos`)
         .then(response => response.json())
         .then(productos => {
@@ -190,4 +220,18 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Hubo un problema al cargar los productos:', error);
             grid.innerHTML = `<p class="error-message">No se pudieron cargar los productos.</p>`;
         });
+
+    const cargarProgresoInicial = async () => {
+        try {
+            const response = await fetch(`${baseApiUrl}/api/ventas/progreso`);
+            if (!response.ok) throw new Error('Error al obtener el progreso.');
+            const datosProgreso = await response.json();
+            actualizarVistaProgreso(datosProgreso);
+        } catch (error) {
+            console.error('Error al cargar el progreso inicial:', error);
+            infoUltimoCiclo.textContent = 'No se pudo cargar el estado del progreso.';
+        }
+    };
+
+    cargarProgresoInicial();
 });
