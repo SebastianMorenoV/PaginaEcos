@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoUltimoCiclo = document.getElementById('info-ultimo-ciclo');
 
     // --- Configuración del API ---
-    const baseApiUrl = 'http://localhost:8080'; // Cambia esto según tu configuración
+    const baseApiUrl = 'https://api.ecosapp.shop'; // Cambia esto según tu configuración
 
     let allProducts = [];
 
