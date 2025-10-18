@@ -259,13 +259,13 @@ body {
   cursor: pointer;
 }
 
-.sells-dialog[open]{
+.sells-dialog[open] {
   display: flex;
   flex-direction: column;
   width: 80%;
   border-radius: 10px;
   border: white 1px;
-  box-shadow: 5px 5px 10px #000;;
+  box-shadow: 5px 5px 10px #000;
   justify-content: flex-start;
   justify-items: flex-start;
   text-align: center;
@@ -322,12 +322,70 @@ body {
 #progress-bar-clickable-area {
   cursor: pointer;
 }
+/* --- ESTILOS PARA EL NUEVO LOGIN --- */
+
+#login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f4f7f6; /* Mismo fondo que tu body */
+}
+
+.login-box {
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 300px;
+}
+
+.login-box h2 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-weight: 500;
+}
+
+#login-password {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1.1em;
+  box-sizing: border-box; /* Importante */
+}
+
+#login-button {
+  background-color: #1e90ff; /* Azul */
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 12px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 1.1em;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.3s;
+}
+
+#login-button:hover {
+  background-color: #0073e6;
+}
+
+#login-error {
+  color: #d93025; /* Rojo de error */
+  margin-top: 15px;
+  min-height: 1.2em; /* Evita que la caja "salte" cuando aparece el error */
+}
 @media (max-width: 600px) {
   .sells-dialog[open] {
     /* Hacemos que el diálogo ocupe casi toda la pantalla */
-    width: 95vw;  /* 95% del ancho de la pantalla */
+    width: 95vw; /* 95% del ancho de la pantalla */
     height: 85vh; /* 85% del alto de la pantalla */
-    
+
     padding: 15px; /* Reducimos el padding en pantallas pequeñas */
   }
 }
