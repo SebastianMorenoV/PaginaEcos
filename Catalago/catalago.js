@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   productGrid.className = "product-grid-catalogo"; // Dale una clase para CSS
   document.querySelector(".grid-layout").appendChild(productGrid); // Añádelo al layout
 
-  const baseApiUrl = "http://api.ecosapp.shop";
+  const baseApiUrl = "https://api.ecosapp.shop";
 
   // 1. Guardamos el estado actual de la carga
   let currentState = {
