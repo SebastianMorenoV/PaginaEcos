@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dialogo
     const dialog = document.getElementById('my-dialog');
     const closeButton = document.getElementById('close-dialog-btn');
+    const progressBarClickableArea = document.getElementById('progress-bar-clickable-area'); // (Esta es la nueva línea)
     
     // <-- NUEVO 1: Añadimos la referencia al cuerpo de la tabla del diálogo -->
     const salesTableBody = document.getElementById('sales-table-body');
@@ -69,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // <-- NUEVO 3: Modificamos el listener del clic para que llame a la API -->
     //Funciones de mi dialogo
-    progressBarText.addEventListener('click', () => {
+    progressBarClickableArea.addEventListener('click', () => {
         // 1. Mostramos el modal inmediatamente
         dialog.showModal();
         

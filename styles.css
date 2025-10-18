@@ -319,7 +319,9 @@ body {
   font-style: italic;
   padding: 20px;
 }
-
+#progress-bar-clickable-area {
+  cursor: pointer;
+}
 @media (max-width: 600px) {
   .sells-dialog[open] {
     /* Hacemos que el diálogo ocupe casi toda la pantalla */

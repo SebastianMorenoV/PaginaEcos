@@ -19,7 +19,7 @@
       </header>
       <section class="progress-container">
         <h2>Progreso del Reparto</h2>
-        <div class="progress-bar-outer">
+        <div class="progress-bar-outer" id="progress-bar-clickable-area">
           <div id="progress-bar-inner" class="progress-bar-inner"></div>
           <span id="progress-bar-text" class="progress-bar-text">Cargando...</span>
         </div>
@@ -32,7 +32,7 @@
           <table>
             <thead>
               <tr>
-                <th>Cliente</th>
+                <th>Producto</th>
                 <th>Monto</th>
                 <th>Fecha</th>
               </tr>
@@ -44,7 +44,7 @@
             </tbody>
           </table>
         </div>
-        
+
         <button id="close-dialog-btn">Cerrar</button>
       </dialog>
       <main id="product-grid" class="product-grid"></main>
