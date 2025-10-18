@@ -14,8 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Referencias a los nuevos elementos del panel de progreso
     const progressBarInner = document.getElementById('progress-bar-inner');
-    const progressBarText = document.getElementById('progress-bar-text'); // <-- CAMBIO 1: Nueva referencia
+    const progressBarText = document.getElementById('progress-bar-text');
     const infoUltimoCiclo = document.getElementById('info-ultimo-ciclo');
+    
+    // Dialogo
+    const dialog = document.getElementById('my-dialog');
+    const closeButton = document.getElementById('close-dialog-btn');
+    
+    // <-- NUEVO 1: Añadimos la referencia al cuerpo de la tabla del diálogo -->
+    const salesTableBody = document.getElementById('sales-table-body');
 
     // --- Configuración del API ---
     const baseApiUrl = 'https://api.ecosapp.shop'; // Cambia esto según tu configuración
@@ -23,6 +30,76 @@ document.addEventListener('DOMContentLoaded', () => {
     let allProducts = [];
 
     // --- Funciones ---
+
+    // <-- NUEVO 2: Creamos una función para "dibujar" las ventas en la tabla -->
+    const renderUltimasVentas = (ventas) => {
+        // Limpiamos la tabla (quitamos el "Cargando...")
+        salesTableBody.innerHTML = '';
+
+        // Verificamos si la API devolvió ventas
+        if (!ventas || ventas.length === 0) {
+            salesTableBody.innerHTML = '<tr><td colspan="3">No se encontraron ventas recientes.</td></tr>';
+            return;
+        }
+
+        // Recorremos el arreglo de ventas y creamos una fila <tr> por cada una
+        ventas.forEach(venta => {
+            // Asumimos que tu DTO devuelve: nombreProducto, montoTotal, fechaVenta
+            
+            // Formateamos los datos
+            const producto = venta.nombreProducto || 'Producto no disponible';
+            const monto = `$${Number(venta.montoTotal).toFixed(2)}`;
+            const fecha = new Date(venta.fechaVenta).toLocaleDateString('es-MX', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            // Creamos el HTML de la fila
+            const filaHTML = `
+                <tr>
+                    <td>${producto}</td>
+                    <td>${monto}</td>
+                    <td>${fecha}</td>
+                </tr>
+            `;
+
+            // La añadimos al <tbody> de la tabla
+            salesTableBody.innerHTML += filaHTML;
+        });
+    };
+
+    // <-- NUEVO 3: Modificamos el listener del clic para que llame a la API -->
+    //Funciones de mi dialogo
+    progressBarText.addEventListener('click', () => {
+        // 1. Mostramos el modal inmediatamente
+        dialog.showModal();
+        
+        // 2. Ponemos la tabla en estado de "Cargando..."
+        //    (Tu HTML ya tiene este estado por defecto, pero lo re-aseguramos)
+        salesTableBody.innerHTML = '<tr><td colspan="3">Cargando...</td></tr>';
+
+        // 3. Hacemos la llamada a tu nuevo endpoint
+        fetch(`${baseApiUrl}/api/ventas/ultimas`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar las ventas.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 4. Cuando los datos llegan, llamamos a la función para dibujarlos
+                renderUltimasVentas(data);
+            })
+            .catch(error => {
+                // 5. Si algo sale mal, mostramos un error en la tabla
+                console.error('Error al cargar últimas ventas:', error);
+                salesTableBody.innerHTML = `<tr><td colspan="3">Error: ${error.message}</td></tr>`;
+            });
+    });
+
+    closeButton.addEventListener('click' , ()=>{
+        dialog.close();
+    });
+
 
     // Función dedicada para actualizar la vista del progreso
     const actualizarVistaProgreso = (datosProgreso) => {
@@ -34,10 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Actualizar barra (solo el ancho)
         progressBarInner.style.width = `${porcentaje}%`;
         
-        // <-- CAMBIO 2: Actualizamos el texto en el nuevo elemento span
+        // Actualizamos el texto en el nuevo elemento span
         progressBarText.textContent = `$${progreso.toFixed(2)} / $1000`;
 
-        // <-- CAMBIO 3: Actualizar texto informativo CON FECHA
+        // Actualizar texto informativo CON FECHA
         if (datosProgreso.ventaQueCompletoCiclo) {
             const venta = datosProgreso.ventaQueCompletoCiclo;
             

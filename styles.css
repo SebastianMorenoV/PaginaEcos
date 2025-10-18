@@ -255,3 +255,77 @@ body {
   font-style: italic;
   font-size: 0.9em;
 }
+.progress-bar-text {
+  cursor: pointer;
+}
+
+.sells-dialog[open]{
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+  border-radius: 10px;
+  border: white 1px;
+  box-shadow: 5px 5px 10px #000;;
+  justify-content: flex-start;
+  justify-items: flex-start;
+  text-align: center;
+}
+#sales-list-container {
+  width: 100%; /* Ocupa todo el ancho del diálogo */
+  max-height: 700px; /* Altura máxima antes de mostrar scroll */
+  overflow-y: auto; /* Muestra scrollbar vertical si es necesario */
+  margin-top: 15px; /* Separación del título <h2> */
+  border: 1px solid #eee; /* Un borde sutil alrededor */
+  border-radius: 8px; /* Esquinas redondeadas */
+}
+
+/* 2. Estilos para la TABLA completa */
+#sales-list-container table {
+  width: 100%; /* La tabla ocupa todo el ancho del contenedor */
+  border-collapse: collapse; /* ¡CLAVE! Une los bordes en uno solo */
+}
+
+/* 3. Estilos para CELDAS (th y td) */
+/* ¡AQUÍ ESTÁ LA MAGIA! Usamos padding para el espacio */
+#sales-list-container th,
+#sales-list-container td {
+  padding: 12px 15px; /* 12px de espacio arriba/abajo, 15px a los lados */
+  text-align: left; /* Alinea el texto a la izquierda */
+  border-bottom: 1px solid #e9e9e9; /* Línea divisoria entre filas */
+}
+
+/* 4. Estilos solo para el ENCABEZADO (thead) */
+#sales-list-container thead th {
+  background-color: #f8f8f8; /* Un fondo gris claro para el encabezado */
+  font-weight: bold; /* Texto en negritas */
+  position: sticky; /* Encabezado fijo al hacer scroll */
+  top: 0; /* Pega el encabezado en la parte superior */
+}
+
+/* 5. Estilos para las FILAS del cuerpo (tbody) */
+#sales-list-container tbody tr:hover {
+  background-color: #fcfcfc; /* Un sutil efecto al pasar el ratón */
+}
+
+/* 6. Estilo para la última fila (para que no tenga doble borde) */
+#sales-list-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* 7. Estilo para el mensaje de "Cargando..." */
+#sales-list-container td[colspan="3"] {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  padding: 20px;
+}
+
+@media (max-width: 600px) {
+  .sells-dialog[open] {
+    /* Hacemos que el diálogo ocupe casi toda la pantalla */
+    width: 95vw;  /* 95% del ancho de la pantalla */
+    height: 85vh; /* 85% del alto de la pantalla */
+    
+    padding: 15px; /* Reducimos el padding en pantallas pequeñas */
+  }
+}

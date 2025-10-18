@@ -1,0 +1,113 @@
+/* --- ESTILOS GENERALES Y RESET --- */
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* --- ESTILOS PARA MÓVIL (POR DEFECTO) --- */
+
+.navigation-sections {
+  background-color: gray;
+  display: flex;
+  /* Alinea el botón y el logo en una fila con espacio entre ellos */
+  gap: 100px;
+  padding: 10px 20px; /* Añade padding a los lados */
+  position: relative; /* Necesario para posicionar el menú desplegable */
+  height: 60px; /* Es mejor usar una altura fija que vh */
+}
+.menu-button {
+  align-self: flex-start;
+  justify-self: flex-start;
+}
+
+.logo-link {
+  align-self: center;
+  justify-self: center;
+}
+.logo {
+  width: 7rem;
+}
+
+/* Estilos para el botón del menú (hamburguesa) */
+.menu-button {
+  display: block; /* Hacemos que se vea en móvil */
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+.menu-button img {
+  width: 30px; /* Ajusta el tamaño del ícono */
+}
+
+/* Contenedor de los enlaces en móvil */
+.nav-links {
+  display: none; /* Por defecto, los enlaces están ocultos */
+
+  /* Estilos para cuando se despliegue */
+  list-style: none;
+  position: absolute;
+  top: 60px; /* Justo debajo de la barra de navegación */
+  left: 0;
+  width: 100%;
+  background-color: #555; /* Un gris un poco más oscuro */
+
+  /* Apila los enlaces en columna */
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+}
+
+/* Clase que se añadirá con JavaScript para mostrar el menú */
+.nav-links.active {
+  display: flex;
+}
+
+/* Estilos para cada enlace individual dentro del menú móvil */
+.nav-links a {
+  text-decoration: none;
+  color: white; /* Color que contraste con el fondo oscuro */
+  font-weight: 600;
+  font-size: 1.5rem;
+  padding: 15px 0;
+  width: 100%;
+  text-align: center;
+}
+
+/* --- MEDIA QUERY PARA ESCRITORIO (PANTALLAS GRANDES) --- */
+@media (min-width: 768px) {
+  /* Ocultamos el botón de hamburguesa en escritorio */
+  .menu-button {
+    display: none;
+  }
+
+  .navigation-sections {
+    justify-content: flex-start; /* Alineamos todo al inicio */
+    gap: 30px; /* Espacio entre el logo y los enlaces */
+  }
+
+  /* Hacemos visible el contenedor de enlaces y lo ponemos en fila */
+  .nav-links {
+    display: flex;
+    flex-direction: row; /* Los enlaces van en fila */
+    position: static; /* Le quitamos el posicionamiento absoluto */
+    background-color: transparent; /* Fondo transparente */
+    width: auto; /* Ancho automático */
+    padding: 0;
+  }
+
+  /* Estilos para cada enlace en escritorio */
+  .nav-links a {
+    color: black; /* Volvemos al color original */
+    padding: 10px 15px;
+    border-radius: 8px;
+    transition: background-color 0.3s; /* Efecto suave al pasar el mouse */
+  }
+
+  /* Efecto hover solo para los enlaces del menú, no para el logo */
+  .nav-links a:hover {
+    background-color: darkgray;
+  }
+}

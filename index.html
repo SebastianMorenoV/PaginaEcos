@@ -25,6 +25,28 @@
         </div>
         <p id="info-ultimo-ciclo">Consultando estado del último reparto...</p>
       </section>
+      <dialog class="sells-dialog" id="my-dialog">
+        <h2>Últimas 10 Ventas</h2>
+
+        <div id="sales-list-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Monto</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="sales-table-body">
+              <tr>
+                <td colspan="3">Cargando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <button id="close-dialog-btn">Cerrar</button>
+      </dialog>
       <main id="product-grid" class="product-grid"></main>
     </div>
     <div id="sell-modal-overlay" class="modal-overlay hidden">
