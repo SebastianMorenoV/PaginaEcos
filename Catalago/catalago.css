@@ -5,109 +5,320 @@
   box-sizing: border-box;
 }
 
-/* --- ESTILOS PARA MÓVIL (POR DEFECTO) --- */
+body {
+  font-family: Arial, sans-serif;
+  /* height: 100vh; <-- ELIMINADO */
+}
 
-.navigation-sections {
-  background-color: gray;
+/* --- 1. Estilos de la Barra de Navegación (Desktop) --- */
+.navbar {
   display: flex;
-  /* Alinea el botón y el logo en una fila con espacio entre ellos */
-  gap: 100px;
-  padding: 10px 20px; /* Añade padding a los lados */
-  position: relative; /* Necesario para posicionar el menú desplegable */
-  height: 60px; /* Es mejor usar una altura fija que vh */
+  justify-content: flex-start; /* Links a la izquierda */
+  align-items: center;
+  background-color: #fff;
+  padding: 20px 40px;
+  border-bottom: 1px solid #eee;
+  width: 100%;
+  position: relative; /* Para anclar el logo */
 }
-.menu-button {
-  align-self: flex-start;
-  justify-self: flex-start;
-}
-
 .logo-link {
-  align-self: center;
-  justify-self: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%); /* Centra el logo */
 }
 .logo {
-  width: 7rem;
+  height: 6rem; /* Fija la altura de tu logo */
+  width: auto;
 }
 
-/* Estilos para el botón del menú (hamburguesa) */
+.nav-links {
+  display: flex; /* Alinea los links horizontalmente */
+  gap: 15px; /* Espacio entre cada link */
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  font-size: 1em;
+  padding: 5px 0;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: #007bff;
+}
+
 .menu-button {
-  display: block; /* Hacemos que se vea en móvil */
+  display: none; /* OCULTO en desktop */
+  font-size: 24px;
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(2, 1fr);
 }
 
-.menu-button img {
-  width: 30px; /* Ajusta el tamaño del ícono */
+/* --- ESTILOS DEL BANNER RESPONSIVE --- */
+
+.banner {
+  /* 1. Define el tamaño y el contexto de posicionamiento */
+  margin: 30px;
+  position: relative; /* ¡CLAVE! Para posicionar la imagen y el texto dentro */
+  height: 40vh; /* 60% de la altura de la pantalla (ajusta esto a tu gusto) */
+  background-color: #333; /* Color de fondo mientras carga la imagen */
+
+  /* 2. ¡CLAVE! Esto oculta las otras imágenes del slider */
+  overflow: hidden;
 }
 
-/* Contenedor de los enlaces en móvil */
-.nav-links {
-  display: none; /* Por defecto, los enlaces están ocultos */
-
-  /* Estilos para cuando se despliegue */
-  list-style: none;
+.slide-banner {
   position: absolute;
-  top: 60px; /* Justo debajo de la barra de navegación */
+  top: 0;
   left: 0;
   width: 100%;
-  background-color: #555; /* Un gris un poco más oscuro */
-
-  /* Apila los enlaces en columna */
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  opacity: 0.9;
 }
 
-/* Clase que se añadirá con JavaScript para mostrar el menú */
-.nav-links.active {
-  display: flex;
-}
+.banner h3 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
 
-/* Estilos para cada enlace individual dentro del menú móvil */
-.nav-links a {
-  text-decoration: none;
-  color: white; /* Color que contraste con el fondo oscuro */
-  font-weight: 600;
-  font-size: 1.5rem;
-  padding: 15px 0;
-  width: 100%;
+  /* 6. Estilos para el texto */
+  color: white;
+  font-size: 2.5em; /* Tamaño grande */
   text-align: center;
+  width: 80%; /* Evita que el texto toque los bordes */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6); /* Sombra para legibilidad */
 }
 
-/* --- MEDIA QUERY PARA ESCRITORIO (PANTALLAS GRANDES) --- */
-@media (min-width: 768px) {
-  /* Ocultamos el botón de hamburguesa en escritorio */
-  .menu-button {
-    display: none;
-  }
+/* --- ESTILOS DE LA SECCIÓN DE FILTROS --- */
+.filters {
+  text-align: center;
+  padding: 20px;
+  margin: 0 30px; /* Igual que el banner */
+}
 
-  .navigation-sections {
-    justify-content: flex-start; /* Alineamos todo al inicio */
-    gap: 30px; /* Espacio entre el logo y los enlaces */
-  }
+.filters h2 {
+  font-size: 1.8em;
+  font-weight: 500;
+  color: #333;
+}
 
-  /* Hacemos visible el contenedor de enlaces y lo ponemos en fila */
+/* --- ESTILOS DE LA PARRILLA DE PRODUCTOS (GRID) --- */
+/* Esta es la clase que tu JS crea y añade al .grid-layout */
+.product-grid-catalogo {
+  display: grid;
+  /* La magia responsive: crea columnas de 250px
+     y las estira para llenar el espacio */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 25px; /* Espacio entre las tarjetas */
+  padding: 0 30px 40px 30px; /* Padding (0 arriba, 30px lados, 40px abajo) */
+}
+
+/* --- ESTILOS DE LA TARJETA DE PRODUCTO INDIVIDUAL --- */
+/* Esta es la clase que tu JS le da a cada tarjeta */
+.product-card-public {
+  /* Apariencia de Tarjeta */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden; /* Para que la imagen no se salga */
+
+  /* Layout Interno */
+  display: flex;
+  flex-direction: column;
+
+  /* Para que funcione como link */
+  text-decoration: none;
+  color: #333;
+
+  /* Transición para el hover */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Efecto al pasar el mouse */
+.product-card-public:hover {
+  transform: translateY(-5px); /* Se levanta un poco */
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo de la imagen del producto */
+.product-card-public img {
+  width: 100%;
+  height: 240px; /* Altura fija para todas las imágenes */
+  object-fit: cover; /* Recorta la imagen para que quepa sin deformarse */
+}
+
+/* Estilo del nombre del producto */
+.product-card-public h3 {
+  font-size: 1.1em;
+  font-weight: 500;
+  margin: 15px 15px 5px 15px;
+}
+
+/* Estilo de la descripción */
+.product-card-public .product-desc {
+  font-size: 0.9em;
+  color: #666;
+  margin: 0 15px 15px 15px;
+
+  /* Truco para cortar descripciones largas */
+  display: -webkit-box;
+  line-clamp: 2; /* Muestra un máximo de 2 líneas */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.7em; /* (0.9em * 1.5 line-height * 2 lines) */
+}
+
+/* Estilo del precio (lo empuja al fondo) */
+.product-card-public .product-price {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #000;
+  margin: auto 15px 15px 15px; /* 'auto' en el margen superior lo empuja abajo */
+}
+
+/* --- AJUSTES A TU LAYOUT --- */
+/* Esto es importante para que el banner, 
+   filtros y grid se apilen verticalmente */
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  /* Altura auto para banner y filtros, 
+     el resto del espacio (1fr) para el grid */
+  grid-template-rows: auto auto 1fr;
+}
+/* --- ESTILOS PARA LOS BOTONES DE FILTRO --- */
+.filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* Espacio entre botones */
+  margin-top: 15px;
+  flex-wrap: wrap; /* Permite que los botones pasen a la siguiente línea en pantallas pequeñas */
+}
+
+.filter-btn {
+  padding: 8px 18px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  border-radius: 20px; /* Botones redondeados */
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.filter-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* Estilo para el botón activo */
+.filter-btn.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+/* --- ESTILOS PARA EL BUSCADOR --- */
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  padding: 0 20px; /* Evita que toque los bordes en móvil */
+}
+
+#product-search-input {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 20px 0 0 20px; /* Redondeado a la izquierda */
+  font-size: 1em;
+  width: 100%; /* Ocupa el espacio disponible */
+  max-width: 400px; /* Ancho máximo */
+  border-right: none; /* Quita el borde derecho para unir con el botón */
+}
+
+#search-button {
+  padding: 10px 20px;
+  border: 1px solid #007bff;
+  background-color: #007bff;
+  color: white;
+  border-radius: 0 20px 20px 0; /* Redondeado a la derecha */
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s;
+}
+
+#search-button:hover {
+  background-color: #0056b3;
+}
+
+/* --- 2. Estilos para Móvil (Pantallas de 768px o menos) --- */
+@media (max-width: 825px) {
+  .navbar {
+    padding: 10px 20px; /* Menos padding en móvil */
+    /* En móvil, justificamos diferente para dar espacio al botón */
+    justify-content: space-between;
+  }
+  .banner {
+    height: 20vh;
+  }
+  .banner h3 {
+    font-size: 1.5em;
+  }
   .nav-links {
-    display: flex;
-    flex-direction: row; /* Los enlaces van en fila */
-    position: static; /* Le quitamos el posicionamiento absoluto */
-    background-color: transparent; /* Fondo transparente */
-    width: auto; /* Ancho automático */
-    padding: 0;
+    /* Aquí está la magia: se ocultan... */
+    display: none;
+
+    /* ...y se transforman en un menú vertical a pantalla completa */
+    flex-direction: column;
+    position: fixed; /* Se superpone a todo */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: white;
+
+    /* Centra los links en el menú móvil */
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
   }
 
-  /* Estilos para cada enlace en escritorio */
   .nav-links a {
-    color: black; /* Volvemos al color original */
-    padding: 10px 15px;
-    border-radius: 8px;
-    transition: background-color 0.3s; /* Efecto suave al pasar el mouse */
+    font-size: 1.5em; /* Links más grandes para tocar */
   }
 
-  /* Efecto hover solo para los enlaces del menú, no para el logo */
-  .nav-links a:hover {
-    background-color: darkgray;
+  .menu-button {
+    display: block; /* MUESTRA el botón hamburguesa */
+    z-index: 1001; /* Se asegura de que esté sobre el menú */
+    order: 1; /* Lo manda al final (derecha) */
+  }
+
+  /* El logo sigue centrado, pero los links originales (a la izq) no están */
+  .nav-links {
+    order: 2;
+  }
+
+  /* --- 3. Clase 'active' que pondrá JavaScript --- */
+
+  /* Cuando el menú esté activo, el botón (que será una 'X') se vuelve negro */
+  .menu-button.active {
+    color: #333;
+  }
+
+  /* Cuando los links estén activos, se muestran */
+  .nav-links.active {
+    display: flex;
+    z-index: 1000;
   }
 }

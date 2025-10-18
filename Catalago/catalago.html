@@ -1,27 +1,46 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Catalago de Joyeria Ecos</title>
+    <title>Catalogo de Joyeria Ecos</title>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="catalago.css" />
   </head>
   <body>
-    <header>
-      <nav class="navigation-sections">
-        <button class="menu-button">
-          <img src="/favicon-16x16.png" alt="menuEcos" />
-        </button>
-        <a href="/index.html" class="logo-link">
-          <img src="ecosLogo.png" class="logo" alt="Logo Ecos" />
-        </a>
-        <div class="nav-links">
-          <a href="tiendas.html">Pulseras</a>
-          <a href="">Cadenas</a>
-          <a href="">Esclavas</a>
-          <a href="">Anillos</a>
-          <a href="">Dijes</a>
+    <nav class="navbar">
+      <div class="nav-links" id="nav-links">
+        <a href="">Esclavas</a>
+        <a href="">Cadenas</a>
+        <a href="">Aretes</a>
+        <a href="">Anillos</a>
+        <a href="">Dijes</a>
+        <a href="">Accesorios</a>
+      </div>
+      <button class="menu-button" id="menu-toggle">&#9776;</button>
+
+      <a href="/Catalago/catalago.html" class="logo-link">
+        <img src="ecosLogo.png" class="logo" alt="Logo Ecos" />
+      </a>
+    </nav>
+    <div class="grid-layout">
+      <section class="banner">
+        <h3>Los mejores Productos en Temporada</h3>
+        <img src="imgs/banner3.jpg" alt="" class="slide-banner" />
+      </section>
+      <section class="filters">
+        <h2>Filtros</h2>
+        <div class="search-container">
+          <input type="search" id="product-search-input" placeholder="Buscar por nombre, material..." />
+          <button id="search-button">Buscar</button>
         </div>
-      </nav>
-    </header>
+        <div class="filter-buttons">
+          <button class="filter-btn" data-filter="oro">Oro</button>
+          <button class="filter-btn" data-filter="plata">Plata</button>
+          <button class="filter-btn" data-filter="circonia">Circonia</button>
+          <button class="filter-btn active" data-filter="">Todos</button>
+        </div>
+      </section>
+    </div>
   </body>
+  <script src="catalago.js"></script>
 </html>
