@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const salesTableBody = document.getElementById("sales-table-body");
 
   // --- Configuración del API ---
-  const baseApiUrl = "http://localhost:8080"; // O tu URL de AWS
+  const baseApiUrl = "http://api.ecosapp.shop"; // O tu URL de AWS
 
   // -----------------------------------------------------------------
   // <-- NUEVO: Configuración de Autenticación -->
