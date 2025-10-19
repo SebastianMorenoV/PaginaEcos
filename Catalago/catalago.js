@@ -10,6 +10,40 @@ document.addEventListener("DOMContentLoaded", () => {
     menuToggle.classList.toggle("active");
     menuToggle.innerHTML = menuToggle.classList.contains("active") ? "&times;" : "&#9776;";
   });
+
+  const bannerElement = document.querySelector(".slide-banner");
+
+  // 1. Define tus imágenes. Asegúrate que la ruta 'imgs/' sea correcta.
+  const bannerImages = ["imgs/banner1.jpg", "imgs/banner2.jpg", "imgs/banner3.jpg"];
+
+  // 2. Tu HTML empieza con 'banner3.jpg', que es el índice 2 de nuestro array (0, 1, 2)
+  let currentBannerIndex = 2;
+
+  // 3. Función para cambiar la imagen
+  function changeBanner() {
+    // Avanza al siguiente índice
+    currentBannerIndex++;
+
+    // Si llega al final, regresa al inicio (índice 0)
+    if (currentBannerIndex >= bannerImages.length) {
+      currentBannerIndex = 0;
+    }
+
+    // 4. Aplica la clase 'fade-out' para que se desvanezca
+    bannerElement.classList.add("fade-out");
+
+    // 5. Espera a que termine la animación de salida (500ms)
+    setTimeout(() => {
+      // 6. Cambia la fuente (src) de la imagen
+      bannerElement.src = bannerImages[currentBannerIndex];
+
+      // 7. Quita la clase 'fade-out' para que aparezca suavemente
+      bannerElement.classList.remove("fade-out");
+    }, 500); // IMPORTANTE: Este tiempo debe coincidir con el CSS
+  }
+
+  // 8. Llama a la función 'changeBanner' cada 5 segundos (5000 milisegundos)
+  setInterval(changeBanner, 5000);
   // --- Referencias para Búsqueda (NUEVO) ---
   const searchInput = document.getElementById("product-search-input");
   const searchButton = document.getElementById("search-button");
@@ -169,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (!searchTerm) {
       document.querySelector('.filter-btn[data-filter=""]').classList.add("active"); // Activa "Todos" si borran búsqueda
     }
-   
 
     fetchProducts(); // Carga la primera página de la búsqueda
   }
