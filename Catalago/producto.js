@@ -116,23 +116,23 @@ function addMarkersToMap(tiendas) {
 
       let mapsUrl;
       if (tienda.placeId) {
-        // ✅ URL correcta con placeId
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query_place_id=${tienda.placeId}`;
+        // ✅ Forma correcta que sí abre el lugar con el placeId
+        mapsUrl = `https://www.google.com/maps/place/?q=place_id:${tienda.placeId}`;
       } else if (tienda.latitud && tienda.longitud) {
-        // ✅ URL correcta con coordenadas
+        // ✅ Forma tradicional con coordenadas
         mapsUrl = `https://www.google.com/maps/search/?api=1&query=${tienda.latitud},${tienda.longitud}`;
       } else {
         mapsUrl = null;
       }
 
       const infoWindowContent = `
-        <div>
-            <b>${tienda.nombre}</b><br>
-            ${tienda.direccion || ""}<br>
-            Stock: ${tienda.cantidadEnTienda}<br><br>
-            <a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>
-        </div>
-      `;
+  <div>
+    <b>${tienda.nombre}</b><br>
+    ${tienda.direccion || ""}<br>
+    Stock: ${tienda.cantidadEnTienda}<br><br>
+    ${mapsUrl ? `<a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>` : ""}
+  </div>
+`;
 
       const infoWindow = new google.maps.InfoWindow({
         content: infoWindowContent,
