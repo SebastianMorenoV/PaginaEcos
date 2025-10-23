@@ -88,6 +88,7 @@ function addMarkersToMap(tiendas) {
     setTimeout(() => addMarkersToMap(tiendas), 500);
     return;
   }
+
   if (!tiendas || tiendas.length === 0) {
     document.getElementById("store-locations").innerHTML = "<h2>No disponible en tiendas físicas.</h2>";
     return;
@@ -96,6 +97,8 @@ function addMarkersToMap(tiendas) {
   const bounds = new google.maps.LatLngBounds();
   const storeListUl = document.getElementById("store-list");
   storeListUl.innerHTML = "";
+
+  console.log("Tiendas recibidas:", tiendas); // para verificar place_id
 
   tiendas.forEach((tienda) => {
     const li = document.createElement("li");
@@ -112,27 +115,35 @@ function addMarkersToMap(tiendas) {
         title: `${tienda.nombre} (Stock: ${tienda.cantidadEnTienda})`,
       });
 
-      // --- INICIO DE LA CORRECCIÓN ---
+      const placeId = tienda.place_id; // usamos solo place_id
+      let mapsUrlWeb = null;
+      let mapsUrlApp = null;
 
-      const placeId = tienda.placeId || tienda.place_id;
-
-      let mapsUrl;
       if (placeId) {
-        mapsUrl = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
-      } else if (tienda.latitud && tienda.longitud) {
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query=${tienda.latitud},${tienda.longitud}`;
-      } else {
-        mapsUrl = null;
+        mapsUrlWeb = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+        mapsUrlApp = `geo:0,0?q=place_id:${placeId}`;
       }
 
-      const infoWindowContent = `
-  <div>
-    <b>${tienda.nombre}</b><br>
-    ${tienda.direccion || ""}<br>
-    Stock: ${tienda.cantidadEnTienda}<br><br>
-    ${mapsUrl ? `<a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>` : ""}
-  </div>
-`;
+      const infoWindowContent = document.createElement("div");
+      infoWindowContent.innerHTML = `
+        <b>${tienda.nombre}</b><br>
+        ${tienda.direccion || ""}<br>
+        Stock: ${tienda.cantidadEnTienda}<br><br>
+      `;
+
+      if (mapsUrlApp && mapsUrlWeb) {
+        const link = document.createElement("a");
+        link.href = mapsUrlApp;
+        link.target = "_blank";
+        link.textContent = "Ver en Google Maps";
+        // Fallback a web si app no se abre
+        link.onclick = (e) => {
+          setTimeout(() => {
+            window.open(mapsUrlWeb, "_blank");
+          }, 500);
+        };
+        infoWindowContent.appendChild(link);
+      }
 
       const infoWindow = new google.maps.InfoWindow({
         content: infoWindowContent,
@@ -141,6 +152,7 @@ function addMarkersToMap(tiendas) {
       marker.addListener("click", () => {
         infoWindow.open(map, marker);
       });
+
       bounds.extend(position);
     }
   });
