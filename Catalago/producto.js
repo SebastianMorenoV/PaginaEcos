@@ -81,7 +81,7 @@ function goToSlide(index) {
   showSlide(index);
 }
 
-// --- 4. Función para Añadir Marcadores al Mapa ---
+// --- 4. Función para Añadir Marcadores al Mapa (MODIFICADA) ---
 function addMarkersToMap(tiendas) {
   if (!map) {
     console.warn("Mapa no listo aún, reintentando en 500ms...");
@@ -110,17 +110,37 @@ function addMarkersToMap(tiendas) {
         position: position,
         map: map,
         title: `${tienda.nombre} (Stock: ${tienda.cantidadEnTienda})`,
-      });
+      }); // 1. Determinamos la URL correcta (dando prioridad a placeId)
+
+      // --- INICIO DE LA MODIFICACIÓN ---
+
+      let mapsUrl;
+      if (tienda.placeId) {
+        // Opción A: Usar el Place ID (la más robusta)
+        mapsUrl = `https://www.google.com/search?q=https://www.google.com/maps/search/%3Fapi%3D1%26query%3DLAT,LNG${tienda.placeId}`;
+      } else {
+        // Opción B: Fallback a latitud/longitud si no hay Place ID
+        mapsUrl = `https://www.google.com/maps/search/?api=1&query=LAT,LNG,${tienda.longitud}`;
+      }
+
+      // 2. Creamos el contenido del InfoWindow CON el enlace
+      const infoWindowContent = `
+        <div>
+            <b>${tienda.nombre}</b><br>
+            ${tienda.direccion || ""}<br>
+            Stock: ${tienda.cantidadEnTienda}<br><br>
+            <a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>
+        </div>
+      `;
+
       const infoWindow = new google.maps.InfoWindow({
-        content: `<div><b>${tienda.nombre}</b><br>${tienda.direccion || ""}<br>Stock: ${tienda.cantidadEnTienda}</div>`,
+        content: infoWindowContent, // <-- Usamos el nuevo contenido
       });
 
+      // 3. El listener AHORA SÓLO abre el InfoWindow
       marker.addListener("click", () => {
         infoWindow.open(map, marker);
-        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${tienda.latitud},${tienda.longitud}`;
-
-        // 3. Le decimos al navegador que abra esa URL en una nueva pestaña
-        window.open(mapsUrl, "_blank");
+        // Ya no se usa window.open aquí
       });
       bounds.extend(position);
     }
