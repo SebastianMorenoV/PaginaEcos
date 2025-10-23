@@ -116,11 +116,13 @@ function addMarkersToMap(tiendas) {
 
       let mapsUrl;
       if (tienda.placeId) {
-        // CORREGIDO: Se añadió ${...}
-        mapsUrl = `https://www.google.com/search?q=https://www.google.com/maps/search/%3Fapi%3D1%26query%3DLAT,LNG$${tienda.placeId}`;
+        // ✅ URL correcta con placeId
+        mapsUrl = `https://www.google.com/maps/search/?api=1&query_place_id=${tienda.placeId}`;
+      } else if (tienda.latitud && tienda.longitud) {
+        // ✅ URL correcta con coordenadas
+        mapsUrl = `https://www.google.com/maps/search/?api=1&query=${tienda.latitud},${tienda.longitud}`;
       } else {
-        // CORREGIDO: Se añadió ${...} para ambas variables
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query=LAT,LNG,$${tienda.latitud},${tienda.longitud}`;
+        mapsUrl = null;
       }
 
       const infoWindowContent = `
