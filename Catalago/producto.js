@@ -114,21 +114,20 @@ function addMarkersToMap(tiendas) {
 
       // --- INICIO DE LA CORRECCIÓN ---
 
-      let mapsUrl;
-      const fallbackQuery = encodeURIComponent(tienda.nombre); // Texto de fallback
+      // ✅ Console log solicitado para ver los datos de cada tienda
+      console.log(`Procesando tienda: ${tienda.nombre}`, tienda);
+
+      let mapsUrl = null; // Inicia como nulo por defecto
+      const fallbackQuery = encodeURIComponent(tienda.nombre); // Texto de respaldo // Verificamos ÚNICAMENTE si existe el placeId, como solicitaste
 
       if (tienda.placeId) {
-        // ✅ 1. Prioridad: Usar Place ID.
-        // Esto abre el negocio específico en la app móvil.
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query=${fallbackQuery}&query_place_id=${tienda.placeId}`;
-      } else if (tienda.latitud != null && tienda.longitud != null) {
-        // ✅ 2. Fallback: Usar coordenadas si no hay Place ID.
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query=${tienda.latitud},${tienda.longitud}`;
+        // Si existe, creamos la URL de Google Maps usando el placeId
+        mapsUrl = `https://www.google.com/maps/search/?api=1&query=$q=${fallbackQuery}&query_place_id=${tienda.placeId}`; // Log para confirmar que se usó el placeId
+        console.log(`-> Generando enlace para '${tienda.nombre}' con Place ID: ${tienda.placeId}`);
       } else {
-        // ✅ 3. Último fallback: Buscar por nombre/dirección.
-        const addressQuery = encodeURIComponent(`${tienda.nombre}, ${tienda.direccion || ""}`);
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query=${addressQuery}`;
-      }
+        // Log para avisar que esta tienda no tendrá enlace
+        console.warn(`-> Tienda '${tienda.nombre}' NO tiene Place ID. No se generará enlace de mapa.`);
+      } // El contenido del InfoWindow. // El enlace <a> solo aparecerá si mapsUrl NO es nulo.
 
       const infoWindowContent = `
   <div>
