@@ -114,16 +114,16 @@ function addMarkersToMap(tiendas) {
 
       // --- INICIO DE LA CORRECCIÓN ---
 
-      // ✅ Console log solicitado para ver los datos de cada tienda
+      // Console log para ver los datos de cada tienda
       console.log(`Procesando tienda: ${tienda.nombre}`, tienda);
 
       let mapsUrl = null; // Inicia como nulo por defecto
-      const fallbackQuery = encodeURIComponent(tienda.nombre); // Texto de respaldo // Verificamos ÚNICAMENTE si existe el placeId, como solicitaste
+      const fallbackQuery = encodeURIComponent(tienda.nombre); // Texto de respaldo // ❗️ CORRECCIÓN: Verificamos "place_id" (con guion bajo)
 
-      if (tienda.placeId) {
-        // Si existe, creamos la URL de Google Maps usando el placeId
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query=$q=${fallbackQuery}&query_place_id=${tienda.placeId}`; // Log para confirmar que se usó el placeId
-        console.log(`-> Generando enlace para '${tienda.nombre}' con Place ID: ${tienda.placeId}`);
+      if (tienda.place_id) {
+        // ❗️ CORRECCIÓN: Usamos "place_id" para construir la URL
+        mapsUrl = `https://www.google.com/maps/search/?api=1&query=$3{fallbackQuery}&query_place_id=${tienda.place_id}`; // Log para confirmar que se usó el place_id
+        console.log(`-> Generando enlace para '${tienda.nombre}' con Place ID: ${tienda.place_id}`);
       } else {
         // Log para avisar que esta tienda no tendrá enlace
         console.warn(`-> Tienda '${tienda.nombre}' NO tiene Place ID. No se generará enlace de mapa.`);
@@ -137,7 +137,6 @@ function addMarkersToMap(tiendas) {
     ${mapsUrl ? `<a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>` : ""}
   </div>
 `;
-
       const infoWindow = new google.maps.InfoWindow({
         content: infoWindowContent,
       });
