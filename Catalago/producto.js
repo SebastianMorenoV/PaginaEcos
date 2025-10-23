@@ -81,11 +81,11 @@ function goToSlide(index) {
   showSlide(index);
 }
 
-// --- 4. Función para Añadir Marcadores al Mapa (MODIFICADA) ---
+// --- 4. Función para Añadir Marcadores al Mapa (CORREGIDA) ---
 function addMarkersToMap(tiendas) {
   if (!map) {
     console.warn("Mapa no listo aún, reintentando en 500ms...");
-    setTimeout(() => addMarkersToMap(tiendas), 500); // Reintenta si el mapa no ha cargado
+    setTimeout(() => addMarkersToMap(tiendas), 500);
     return;
   }
   if (!tiendas || tiendas.length === 0) {
@@ -110,20 +110,19 @@ function addMarkersToMap(tiendas) {
         position: position,
         map: map,
         title: `${tienda.nombre} (Stock: ${tienda.cantidadEnTienda})`,
-      }); // 1. Determinamos la URL correcta (dando prioridad a placeId)
+      });
 
-      // --- INICIO DE LA MODIFICACIÓN ---
+      // --- INICIO DE LA CORRECCIÓN ---
 
       let mapsUrl;
       if (tienda.placeId) {
-        // Opción A: Usar el Place ID (la más robusta)
-        mapsUrl = `https://www.google.com/search?q=https://www.google.com/maps/search/%3Fapi%3D1%26query%3DLAT,LNG${tienda.placeId}`;
+        // CORREGIDO: Se añadió ${...}
+        mapsUrl = `https://www.google.com/search?q=https://www.google.com/maps/search/%3Fapi%3D1%26query%3DLAT,LNG$${tienda.placeId}`;
       } else {
-        // Opción B: Fallback a latitud/longitud si no hay Place ID
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query=LAT,LNG,${tienda.longitud}`;
+        // CORREGIDO: Se añadió ${...} para ambas variables
+        mapsUrl = `https://www.google.com/maps/search/?api=1&query=LAT,LNG,$${tienda.latitud},${tienda.longitud}`;
       }
 
-      // 2. Creamos el contenido del InfoWindow CON el enlace
       const infoWindowContent = `
         <div>
             <b>${tienda.nombre}</b><br>
@@ -134,13 +133,11 @@ function addMarkersToMap(tiendas) {
       `;
 
       const infoWindow = new google.maps.InfoWindow({
-        content: infoWindowContent, // <-- Usamos el nuevo contenido
+        content: infoWindowContent,
       });
 
-      // 3. El listener AHORA SÓLO abre el InfoWindow
       marker.addListener("click", () => {
         infoWindow.open(map, marker);
-        // Ya no se usa window.open aquí
       });
       bounds.extend(position);
     }
