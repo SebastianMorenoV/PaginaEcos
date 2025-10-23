@@ -114,12 +114,12 @@ function addMarkersToMap(tiendas) {
 
       // --- INICIO DE LA CORRECCIÓN ---
 
+      const placeId = tienda.placeId || tienda.place_id;
+
       let mapsUrl;
-      if (tienda.placeId) {
-        // ✅ Forma correcta que sí abre el lugar con el placeId
-        mapsUrl = `https://www.google.com/maps/place/?q=place_id:${tienda.placeId}`;
+      if (placeId) {
+        mapsUrl = `https://www.google.com/maps/place/?q=place_id:${placeId}`;
       } else if (tienda.latitud && tienda.longitud) {
-        // ✅ Forma tradicional con coordenadas
         mapsUrl = `https://www.google.com/maps/search/?api=1&query=${tienda.latitud},${tienda.longitud}`;
       } else {
         mapsUrl = null;
