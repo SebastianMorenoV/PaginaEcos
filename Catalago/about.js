@@ -16,7 +16,7 @@ function initMap() {
 
 // --- Carga de tiendas ---
 function loadStoreLocations() {
-  // Datos estáticos (puedes reemplazarlos con fetch desde tu API si lo deseas)
+  //AQUI ME GUSTARIA BUSCAR EN LA BASE DE DATOS TODAS LAS UBICACIONES CON PLACE_ID DE TODAS LAS TIENDAS QUE NO SEAN Ecos de Oro Joyeria
   const tiendas = [
     {
       nombre: "Vida y Estilo ConceptStore",
@@ -27,10 +27,10 @@ function loadStoreLocations() {
     },
     {
       nombre: "Idalia Salón",
-      direccion: "Vicente Guerrero 520 Sur, Col. Centro, Cd. Obregón, Sonora",
-      latitud: 27.492780,
-      longitud: -109.938920,
-      place_id: "ChIJQbS2jEQVyIYR3oMbebc0S2I",
+      direccion: "Calle Blvd. C.T.M 136, Sonora, 85198, Cdad.Obregón, Son.",
+      latitud: 27.44981793496795,
+      longitud: -109.94054975092533,
+      place_id: "ChIJk6IxeSMWyIYRMVso2o7vXkk",
     },
   ];
 

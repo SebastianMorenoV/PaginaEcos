@@ -17,19 +17,19 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 50px 20px;
+  padding: 0px 20px;
   background-color: #fff;
 }
 
 .informacion-negocio img {
-  padding: 5%;
-  width: 40rem;
-  height: 25rem;
+  padding: 0 5%;
+  width: 70vw;
+  height: 60vh;
   object-fit: cover;
   object-position: 0 30%;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .texto-nosotros {
@@ -159,8 +159,11 @@ body {
 /* --- RESPONSIVE --- */
 @media (max-width: 768px) {
   .informacion-negocio img {
-    width: 90%;
-    height: auto;
+    width: 100vw;
+    height: 30rem;
+
+    padding: 0;
+    align-self: center;
   }
 
   .texto-nosotros h2 {
