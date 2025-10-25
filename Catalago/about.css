@@ -19,7 +19,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0px 20px;
+  padding: 10px 20px;
   background-color: #fff;
 }
 
@@ -28,7 +28,7 @@ body {
   width: 70vw;
   height: 60vh;
   object-fit: cover;
-  object-position: 0 30%;
+  object-position: 0 35%;
   border-radius: 10px;
 }
 
