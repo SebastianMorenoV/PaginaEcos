@@ -133,6 +133,61 @@
         line-height: 1.6;
       }
 
+      .related-products {
+        grid-column: 1 / -1; /* Ocupa todo el ancho */
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #eee;
+        text-align: left; /* Título alineado a la izquierda */
+      }
+      
+      .related-products-grid {
+        display: grid;
+        /* Columnas responsivas: Mínimo 150px de ancho, máximo 1fr */
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      
+      .related-product-card {
+        text-decoration: none;
+        color: #333;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 0.2s ease;
+      }
+      
+      .related-product-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+      
+      .related-product-card img {
+        width: 100%;
+        height: 150px; /* Altura fija para la imagen */
+        object-fit: cover;
+        background-color: #f9f9f9;
+      }
+      
+      .related-product-card-info {
+        padding: 10px 15px;
+      }
+      
+      .related-product-card-info h4 {
+        font-size: 0.95em;
+        margin-bottom: 5px;
+        /* Evita que el texto se desborde */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .related-product-card-info .price {
+        font-size: 0.9em;
+        font-weight: bold;
+        color: #007bff;
+      }
+
       /* CORRECCIÓN de Layout Desktop */
       @media (min-width: 768px) {
         /* Info se va a la Col 1, Fila 2 */
@@ -254,8 +309,15 @@
         <h2>Puedes Encontrarlo en</h2>
         <div id="map"></div>
         <ul class="store-list" id="store-list">
-          <li>Cargando tiendas...</li>
+          <li>Cargando tiendas... (Si la ubicacion no carga refresca la pagina)</li>
         </ul>
+      </section>
+
+      <section class="related-products" id="related-products" style="display: none;">
+        <h2>Productos Relacionados</h2>
+        <div class="related-products-grid" id="related-products-grid">
+          <p class="loading-placeholder">Cargando productos...</p>
+        </div>
       </section>
     </main>
 

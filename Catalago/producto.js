@@ -31,15 +31,11 @@ function buildSlider(images) {
   let sliderHTML = "";
   let dotsHTML = "";
   images.forEach((imgSrc, index) => {
-    const fullSrc = imgSrc.startsWith("http")
-      ? imgSrc
-      : `data:image/jpeg;base64,${imgSrc}`;
-    sliderHTML += `<img src="${fullSrc}" class="slider-image ${
-      index === 0 ? "active" : ""
-    }" alt="Producto imagen ${index + 1}">`;
-    dotsHTML += `<span class="slider-dot ${
-      index === 0 ? "active" : ""
-    }" data-index="${index}"></span>`;
+    const fullSrc = imgSrc.startsWith("http") ? imgSrc : `data:image/jpeg;base64,${imgSrc}`;
+    sliderHTML += `<img src="${fullSrc}" class="slider-image ${index === 0 ? "active" : ""}" alt="Producto imagen ${
+      index + 1
+    }">`;
+    dotsHTML += `<span class="slider-dot ${index === 0 ? "active" : ""}" data-index="${index}"></span>`;
   });
   sliderContainer.innerHTML = `
         ${sliderHTML}
@@ -54,9 +50,7 @@ function buildSlider(images) {
   document.getElementById("prev-slide").addEventListener("click", prevSlide);
   document.getElementById("next-slide").addEventListener("click", nextSlide);
   document.querySelectorAll(".slider-dot").forEach((dot) => {
-    dot.addEventListener("click", (e) =>
-      goToSlide(parseInt(e.target.dataset.index))
-    );
+    dot.addEventListener("click", (e) => goToSlide(parseInt(e.target.dataset.index)));
   });
 }
 
@@ -76,8 +70,7 @@ function nextSlide() {
 }
 
 function prevSlide() {
-  let prevIndex =
-    (currentSlideIndex - 1 + productImages.length) % productImages.length;
+  let prevIndex = (currentSlideIndex - 1 + productImages.length) % productImages.length;
   showSlide(prevIndex);
 }
 
@@ -93,8 +86,7 @@ function addMarkersToMap(tiendas) {
     return;
   }
   if (!tiendas || tiendas.length === 0) {
-    document.getElementById("store-locations").innerHTML =
-      "<h2>No disponible en tiendas físicas.</h2>";
+    document.getElementById("store-locations").innerHTML = "<h2>No disponible en tiendas físicas.</h2>";
     return;
   }
 
@@ -104,9 +96,9 @@ function addMarkersToMap(tiendas) {
 
   tiendas.forEach((tienda) => {
     const li = document.createElement("li");
-    li.innerHTML = `<b>${tienda.nombre}</b>: ${
-      tienda.direccion || "Dirección no disponible"
-    } (Stock: ${tienda.cantidadEnTienda})`;
+    li.innerHTML = `<b>${tienda.nombre}</b>: ${tienda.direccion || "Dirección no disponible"} (Stock: ${
+      tienda.cantidadEnTienda
+    })`;
     storeListUl.appendChild(li);
 
     if (tienda.latitud != null && tienda.longitud != null) {
@@ -124,15 +116,10 @@ function addMarkersToMap(tiendas) {
 
       if (tienda.place_id) {
         // CORRECCIÓN: Esta es la URL correcta para el Place ID
-        mapsUrl =
-          `https://google.com/maps/search/?api=1&query=${fallbackQuery}&query_place_id=${tienda.place_id}`;
-        console.log(
-          `-> Generando enlace para '${tienda.nombre}' con Place ID: ${tienda.place_id}`
-        );
+        mapsUrl = `https://google.com/maps/search/?api=1&query=${fallbackQuery}&query_place_id=${tienda.place_id}`;
+        console.log(`-> Generando enlace para '${tienda.nombre}' con Place ID: ${tienda.place_id}`);
       } else {
-        console.warn(
-          `-> Tienda '${tienda.nombre}' NO tiene Place ID. No se generará enlace de mapa.`
-        );
+        console.warn(`-> Tienda '${tienda.nombre}' NO tiene Place ID. No se generará enlace de mapa.`);
       }
 
       const infoWindowContent = `
@@ -180,8 +167,7 @@ function displayProductDetails(data) {
   const pageUrl = window.location.href;
 
   // 2. Creamos el mensaje con salto de línea
-  const whatsappMessage =
-    `Hola, me interesa este producto: ${data.nombre}\n\n${pageUrl}`;
+  const whatsappMessage = `Hola, me interesa este producto: ${data.nombre}\n\n${pageUrl}`;
 
   // 3. Codificamos TODO el mensaje
   const encodedMessage = encodeURIComponent(whatsappMessage);
@@ -210,8 +196,7 @@ function displayProductDetails(data) {
   // --- Lógica del Mapa Condicional ---
   const tiendas = data.tiendasDisponibles;
   const noHayTiendas = !tiendas || tiendas.length === 0;
-  const soloEcos =
-    tiendas && tiendas.length === 1 && tiendas[0].nombre === "Ecos de Oro Joyeria";
+  const soloEcos = tiendas && tiendas.length === 1 && tiendas[0].nombre === "Ecos de Oro Joyeria";
 
   if (noHayTiendas || soloEcos) {
     // Si no hay tiendas FÍSICAS, muestra mensaje personalizado
@@ -227,6 +212,80 @@ function displayProductDetails(data) {
     storeSection.style.display = "block";
     addMarkersToMap(data.tiendasDisponibles);
   }
+
+  if (data.categoria && data.categoria.nombre) {
+    fetchRelatedProducts(data.categoria.nombre, productId);
+  } else {
+    // Si el producto no tiene categoría, oculta la sección
+    document.getElementById("related-products").style.display = "none";
+  } 
+}
+/**
+ * Busca productos en la misma categoría.
+ * @param {string} categoriaNombre - El nombre de la categoría (ej: "Cadenas")
+ * @param {string|number} currentProductId - El ID del producto actual (para excluirlo)
+ */
+async function fetchRelatedProducts(categoriaNombre, currentProductId) {
+  const relatedSection = document.getElementById("related-products");
+  const baseApiUrl = "https://api.ecosapp.shop";
+
+  // API URL para buscar por categoría, limitar a 4, y excluir el ID actual
+  const url = `${baseApiUrl}/api/productos/publicos?categoria=${encodeURIComponent(
+    categoriaNombre
+  )}&limite=4&excluir=${currentProductId}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("No se pudieron cargar los productos relacionados.");
+    }
+    const products = await response.json();
+
+    // Si tu API devuelve paginación, los productos estarán en 'products.content'
+    const productList = products.content ? products.content : products;
+
+    if (productList && productList.length > 0) {
+      relatedSection.style.display = "block"; // Muestra la sección
+      displayRelatedProducts(productList); // Llama a la función que los "dibuja"
+    } else {
+      // Si no hay relacionados, oculta la sección
+      relatedSection.style.display = "none";
+    }
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    relatedSection.style.display = "none"; // Oculta si hay error
+  }
+}
+/**
+ * "Dibuja" las tarjetas de productos en el grid
+ * @param {Array} products - Lista de productos a mostrar
+ */
+function displayRelatedProducts(products) {
+  const grid = document.getElementById("related-products-grid");
+  grid.innerHTML = ""; // Limpia el mensaje "Cargando..."
+
+  products.forEach((product) => {
+    // Maneja la imagen (Base64 o URL)
+    let imgSrc = "placeholder.jpg"; // Imagen por defecto
+    if (product.foto) {
+      imgSrc = product.foto.startsWith("http") ? product.foto : `data:image/jpeg;base64,${product.foto}`;
+    }
+
+    // Crea la tarjeta como un enlace
+    const card = document.createElement("a");
+    card.href = `producto.html?id=${product.id}`; // Enlace al detalle
+    card.className = "related-product-card";
+
+    card.innerHTML = `
+      <img src="${imgSrc}" alt="${product.nombre}">
+      <div class="related-product-card-info">
+        <h4>${product.nombre}</h4>
+        <p class="price">$${Number(product.precio).toFixed(2)} MXN</p>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
 }
 
 // --- 6. Carga de Datos Inicial (Dentro de DOMContentLoaded) ---
@@ -269,8 +328,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // --- Fin Lógica del Lightbox ---
 
   if (!productId) {
-    detailContent.innerHTML =
-      '<h1 class="error-message">Error: ID de producto no válido.</h1>';
+    detailContent.innerHTML = '<h1 class="error-message">Error: ID de producto no válido.</h1>';
     return;
   }
 
