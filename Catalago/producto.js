@@ -8,8 +8,7 @@ let slideInterval;
 const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get("id");
 
-// --- 2. Inicialización de Google Maps (¡AHORA ES GLOBAL!) ---
-// Google llama a esta función automáticamente cuando su script termina de cargar.
+// --- 2. Inicialización de Google Maps ---
 function initMap() {
   const defaultLocation = { lat: 27.496, lng: -109.94 }; // Coordenadas de Obregón
 
@@ -19,8 +18,6 @@ function initMap() {
     mapTypeControl: false,
     streetViewControl: false,
   });
-  // La función que añade los marcadores será llamada después,
-  // cuando los datos del producto se hayan cargado.
 }
 
 // --- 3. Funciones del Slider de Imágenes ---
@@ -34,17 +31,21 @@ function buildSlider(images) {
   let sliderHTML = "";
   let dotsHTML = "";
   images.forEach((imgSrc, index) => {
-    const fullSrc = imgSrc.startsWith("http") ? imgSrc : `data:image/jpeg;base64,${imgSrc}`;
-    sliderHTML += `<img src="${fullSrc}" class="slider-image ${index === 0 ? "active" : ""}" alt="Producto imagen ${
-      index + 1
-    }">`;
-    dotsHTML += `<span class="slider-dot ${index === 0 ? "active" : ""}" data-index="${index}"></span>`;
+    const fullSrc = imgSrc.startsWith("http")
+      ? imgSrc
+      : `data:image/jpeg;base64,${imgSrc}`;
+    sliderHTML += `<img src="${fullSrc}" class="slider-image ${
+      index === 0 ? "active" : ""
+    }" alt="Producto imagen ${index + 1}">`;
+    dotsHTML += `<span class="slider-dot ${
+      index === 0 ? "active" : ""
+    }" data-index="${index}"></span>`;
   });
   sliderContainer.innerHTML = `
         ${sliderHTML}
         <div class="slider-controls">
-            <button id="prev-slide">&lt;</button>
-            <button id="next-slide">&gt;</button>
+            <button id="prev-slide"><</button>
+            <button id="next-slide">></button>
         </div>
         <div class="slider-dots">
             ${dotsHTML}
@@ -53,7 +54,9 @@ function buildSlider(images) {
   document.getElementById("prev-slide").addEventListener("click", prevSlide);
   document.getElementById("next-slide").addEventListener("click", nextSlide);
   document.querySelectorAll(".slider-dot").forEach((dot) => {
-    dot.addEventListener("click", (e) => goToSlide(parseInt(e.target.dataset.index)));
+    dot.addEventListener("click", (e) =>
+      goToSlide(parseInt(e.target.dataset.index))
+    );
   });
 }
 
@@ -73,7 +76,8 @@ function nextSlide() {
 }
 
 function prevSlide() {
-  let prevIndex = (currentSlideIndex - 1 + productImages.length) % productImages.length;
+  let prevIndex =
+    (currentSlideIndex - 1 + productImages.length) % productImages.length;
   showSlide(prevIndex);
 }
 
@@ -81,7 +85,7 @@ function goToSlide(index) {
   showSlide(index);
 }
 
-// --- 4. Función para Añadir Marcadores al Mapa (CORREGIDA) ---
+// --- 4. Función para Añadir Marcadores al Mapa ---
 function addMarkersToMap(tiendas) {
   if (!map) {
     console.warn("Mapa no listo aún, reintentando en 500ms...");
@@ -89,7 +93,8 @@ function addMarkersToMap(tiendas) {
     return;
   }
   if (!tiendas || tiendas.length === 0) {
-    document.getElementById("store-locations").innerHTML = "<h2>No disponible en tiendas físicas.</h2>";
+    document.getElementById("store-locations").innerHTML =
+      "<h2>No disponible en tiendas físicas.</h2>";
     return;
   }
 
@@ -99,9 +104,9 @@ function addMarkersToMap(tiendas) {
 
   tiendas.forEach((tienda) => {
     const li = document.createElement("li");
-    li.innerHTML = `<b>${tienda.nombre}</b>: ${tienda.direccion || "Dirección no disponible"} (Stock: ${
-      tienda.cantidadEnTienda
-    })`;
+    li.innerHTML = `<b>${tienda.nombre}</b>: ${
+      tienda.direccion || "Dirección no disponible"
+    } (Stock: ${tienda.cantidadEnTienda})`;
     storeListUl.appendChild(li);
 
     if (tienda.latitud != null && tienda.longitud != null) {
@@ -112,30 +117,31 @@ function addMarkersToMap(tiendas) {
         title: `${tienda.nombre} (Stock: ${tienda.cantidadEnTienda})`,
       });
 
-      // --- INICIO DE LA CORRECCIÓN ---
-
-      // Console log para ver los datos de cada tienda
       console.log(`Procesando tienda: ${tienda.nombre}`, tienda);
 
-      let mapsUrl = null; // Inicia como nulo por defecto
-      const fallbackQuery = encodeURIComponent(tienda.nombre); // Texto de respaldo // ❗️ CORRECCIÓN: Verificamos "place_id" (con guion bajo)
+      let mapsUrl = null;
+      const fallbackQuery = encodeURIComponent(tienda.nombre);
 
       if (tienda.place_id) {
-        // ❗️ CORRECCIÓN: Usamos "place_id" para construir la URL
-        mapsUrl = `https://www.google.com/maps/search/?api=1&query=$3{fallbackQuery}&query_place_id=${tienda.place_id}`; // Log para confirmar que se usó el place_id
-        console.log(`-> Generando enlace para '${tienda.nombre}' con Place ID: ${tienda.place_id}`);
+        // CORRECCIÓN: Esta es la URL correcta para el Place ID
+        mapsUrl =
+          `https://google.com/maps/search/?api=1&query=${fallbackQuery}&query_place_id=${tienda.place_id}`;
+        console.log(
+          `-> Generando enlace para '${tienda.nombre}' con Place ID: ${tienda.place_id}`
+        );
       } else {
-        // Log para avisar que esta tienda no tendrá enlace
-        console.warn(`-> Tienda '${tienda.nombre}' NO tiene Place ID. No se generará enlace de mapa.`);
-      } // El contenido del InfoWindow. // El enlace <a> solo aparecerá si mapsUrl NO es nulo.
+        console.warn(
+          `-> Tienda '${tienda.nombre}' NO tiene Place ID. No se generará enlace de mapa.`
+        );
+      }
 
       const infoWindowContent = `
-  <div>
-    <b>${tienda.nombre}</b><br>
-    ${tienda.direccion || ""}<br>
-    Stock: ${tienda.cantidadEnTienda}<br><br>
-    ${mapsUrl ? `<a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>` : ""}
-  </div>
+  <div>
+    <b>${tienda.nombre}</b><br>
+    ${tienda.direccion || ""}<br>
+    Stock: ${tienda.cantidadEnTienda}<br><br>
+    ${mapsUrl ? `<a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>` : ""}
+  </div>
 `;
       const infoWindow = new google.maps.InfoWindow({
         content: infoWindowContent,
@@ -161,38 +167,37 @@ function addMarkersToMap(tiendas) {
   }
 }
 
-// --- 5. Función para Mostrar Detalles del Producto (MODIFICADA) ---
+// --- 5. Función para Mostrar Detalles del Producto (CORREGIDA) ---
 function displayProductDetails(data) {
   const infoContainer = document.getElementById("product-info");
   const storeSection = document.getElementById("store-locations");
 
   document.title = `${data.nombre} - Joyeria Ecos`;
 
-  // --- INICIO DE MODIFICACIÓN (PARTE 2: Botón WhatsApp) ---
+  // --- Lógica del Botón WhatsApp (CORREGIDA) ---
 
-  // 1. Obtenemos la URL actual de la página (ej: https://ecos.shop/producto.html?id=123)
+  // 1. Obtenemos la URL actual de la página
   const pageUrl = window.location.href;
 
-  // 2. Creamos el mensaje. El "\n" (salto de línea) es clave.
-  // WhatsApp lo convertirá en un salto de línea en el mensaje.
-  const whatsappMessage = `Hola, me interesa este producto: ${data.nombre}\n\n${pageUrl}`;
+  // 2. Creamos el mensaje con salto de línea
+  const whatsappMessage =
+    `Hola, me interesa este producto: ${data.nombre}\n\n${pageUrl}`;
 
-  // 3. Codificamos TODO el mensaje para que sea seguro en una URL
+  // 3. Codificamos TODO el mensaje
   const encodedMessage = encodeURIComponent(whatsappMessage);
 
-  // 4. Creamos la URL final de WhatsApp
+  // 4. Creamos la URL final de WhatsApp (¡CORREGIDA!)
   const whatsappUrl = `https://wa.me/526441901249?text=${encodedMessage}`;
 
-  // 5. Inyectamos el HTML con la NUEVA URL en el botón
+  // 5. Inyectamos el HTML
   infoContainer.innerHTML = `
         <h1>${data.nombre}</h1>
         <p class="price">$${Number(data.precio).toFixed(2)} MXN</p>
         <p class="description">${data.descripcion || "Sin descripción."}</p>
         <a href="${whatsappUrl}" target="_blank" class="order-button">Ordenar Aquí (WhatsApp)</a>
     `;
-  // --- FIN DE MODIFICACIÓN (PARTE 2) ---
 
-  // Esto construye el slider de imágenes (sin cambios)
+  // --- Lógica del Slider ---
   let images = [];
   if (data.foto) {
     images.push(data.foto);
@@ -202,45 +207,74 @@ function displayProductDetails(data) {
   }
   buildSlider(images);
 
-  // --- INICIO DE MODIFICACIÓN (PARTE 1: Mapa Condicional) ---
+  // --- Lógica del Mapa Condicional ---
   const tiendas = data.tiendasDisponibles;
-
-  // Verificamos si la lista de tiendas está vacía
   const noHayTiendas = !tiendas || tiendas.length === 0;
-
-  // Verificamos si la ÚNICA tienda es "Ecos de Oro Joyeria"
-  const soloEcos = tiendas && tiendas.length === 1 && tiendas[0].nombre === "Ecos de Oro Joyeria";
+  const soloEcos =
+    tiendas && tiendas.length === 1 && tiendas[0].nombre === "Ecos de Oro Joyeria";
 
   if (noHayTiendas || soloEcos) {
-    // Si no hay tiendas FÍSICAS (o solo es "Ecos"), mostramos tu mensaje personalizado.
-    storeSection.style.display = "block"; // Muestra la sección
-
-    // Reemplazamos el contenido de la sección para quitar el mapa y la lista
+    // Si no hay tiendas FÍSICAS, muestra mensaje personalizado
+    storeSection.style.display = "block";
     storeSection.innerHTML = `
       <h2>Puntos de Venta</h2>
       <p class="no-store-message">
         Este producto no se encuentra en ningun punto de venta, puedes ordenarlo a tu domicilio contactandonos haciendo click en el boton.
       </p>
     `;
-    // No llamamos a addMarkersToMap()
   } else {
-    // Si hay tiendas físicas REALES, mostramos la sección y llamamos a la función del mapa
+    // Si hay tiendas físicas, muestra el mapa
     storeSection.style.display = "block";
     addMarkersToMap(data.tiendasDisponibles);
   }
-  // --- FIN DE MODIFICACIÓN (PARTE 1) ---
 }
 
 // --- 6. Carga de Datos Inicial (Dentro de DOMContentLoaded) ---
 document.addEventListener("DOMContentLoaded", async () => {
   const detailContent = document.getElementById("product-detail-content");
 
+  // --- Lógica del Lightbox (Vista Previa de Imagen) ---
+  const sliderContainer = document.getElementById("image-slider");
+  const lightbox = document.getElementById("image-lightbox");
+  const lightboxImg = document.getElementById("lightbox-img");
+  const closeBtn = document.querySelector(".lightbox-close");
+
+  if (sliderContainer && lightbox && lightboxImg && closeBtn) {
+    // 1. Abrir el lightbox
+    sliderContainer.addEventListener("click", (e) => {
+      if (e.target.classList.contains("slider-image")) {
+        const imgSrc = e.target.getAttribute("src");
+        lightboxImg.setAttribute("src", imgSrc);
+        lightbox.style.display = "flex";
+        document.body.style.overflow = "hidden";
+      }
+    });
+
+    // 2. Función para cerrar
+    function closeLightbox() {
+      lightbox.style.display = "none";
+      document.body.style.overflow = "auto";
+    }
+
+    // 3. Cerrar con el botón X
+    closeBtn.addEventListener("click", closeLightbox);
+
+    // 4. Cerrar haciendo clic en el fondo
+    lightbox.addEventListener("click", (e) => {
+      if (e.target.id === "image-lightbox") {
+        closeLightbox();
+      }
+    });
+  }
+  // --- Fin Lógica del Lightbox ---
+
   if (!productId) {
-    detailContent.innerHTML = '<h1 class="error-message">Error: ID de producto no válido.</h1>';
+    detailContent.innerHTML =
+      '<h1 class="error-message">Error: ID de producto no válido.</h1>';
     return;
   }
 
-  // Cambia a tu URL de producción cuando subas los cambios
+  // Cambia a tu URL de producción
   const baseApiUrl = "https://api.ecosapp.shop";
   const url = `${baseApiUrl}/api/productos/publicos/${productId}`;
 
@@ -255,7 +289,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     console.error(error);
     detailContent.innerHTML = `<h1 class="error-message">Error: ${error.message}</h1>`;
-    // Oculta la sección del mapa si hay un error grave
     const storeLocations = document.getElementById("store-locations");
     if (storeLocations) {
       storeLocations.style.display = "none";
