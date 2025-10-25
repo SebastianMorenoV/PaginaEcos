@@ -10,14 +10,7 @@ const productId = urlParams.get("id");
 
 // --- 2. Inicialización de Google Maps ---
 function initMap() {
-  const defaultLocation = { lat: 27.496, lng: -109.94 }; // Coordenadas de Obregón
-
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 12,
-    center: defaultLocation,
-    mapTypeControl: false,
-    streetViewControl: false,
-  });
+ 
 }
 
 // --- 3. Funciones del Slider de Imágenes ---
@@ -80,6 +73,13 @@ function goToSlide(index) {
 
 // --- 4. Función para Añadir Marcadores al Mapa ---
 function addMarkersToMap(tiendas) {
+  const defaultLocation = { lat: 27.496, lng: -109.94 };
+  map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 12,
+    center: defaultLocation,
+    mapTypeControl: false,
+    streetViewControl: false,
+  });
   if (!map) {
     console.warn("Mapa no listo aún, reintentando en 500ms...");
     setTimeout(() => addMarkersToMap(tiendas), 500);
@@ -213,10 +213,12 @@ function displayProductDetails(data) {
     addMarkersToMap(data.tiendasDisponibles);
   }
 
-  if (data.categoria && data.categoria.nombre) {
-    fetchRelatedProducts(data.categoria.nombre, productId);
+  if (data.categoria) {
+    // Y pasamos ese string directamente
+    fetchRelatedProducts(data.categoria, productId);
   } else {
-    // Si el producto no tiene categoría, oculta la sección
+    // Si no hay categoría, oculta la sección
+    console.warn("Este producto no tiene categoría, no se mostrarán relacionados.");
     document.getElementById("related-products").style.display = "none";
   }
 }
