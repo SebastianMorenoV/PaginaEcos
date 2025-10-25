@@ -1,0 +1,179 @@
+/* --- RESET Y BASE --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  color: #111;
+  line-height: 1.6;
+}
+
+/* --- SECCIÓN: QUIÉNES SOMOS --- */
+.informacion-negocio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 50px 20px;
+  background-color: #fff;
+}
+
+.informacion-negocio img {
+  padding: 5%;
+  width: 40rem;
+  height: 25rem;
+  object-fit: cover;
+  object-position: 0 30%;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.texto-nosotros {
+  max-width: 800px;
+  margin-top: 20px;
+}
+
+.texto-nosotros h2 {
+  font-size: 2em;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #000;
+}
+
+.texto-nosotros p {
+  font-size: 1.1em;
+  color: #333;
+}
+
+/* --- SECCIÓN: CÓMO COMPRAR --- */
+.como-comprar {
+  background-color: #f9f9f9;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.como-comprar h2 {
+  font-size: 1.8em;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.como-comprar p {
+  color: #444;
+  font-size: 1.05em;
+  margin-bottom: 15px;
+}
+
+.como-comprar ol {
+  list-style: none;
+  padding: 0;
+  margin: 20px auto;
+  max-width: 600px;
+  text-align: left;
+}
+
+.como-comprar ol li {
+  margin-bottom: 12px;
+  font-size: 1em;
+  color: #333;
+  position: relative;
+  padding-left: 25px;
+}
+
+.como-comprar ol li::before {
+  content: "•";
+  color: #000;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.botones-contacto {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.botones-contacto a {
+  text-decoration: none;
+  padding: 10px 20px;
+  border: 1px solid #000;
+  color: #000;
+  font-weight: bold;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+
+.botones-contacto a:hover {
+  background-color: #000;
+  color: #fff;
+}
+
+/* --- SECCIÓN: DÓNDE ENCONTRARNOS --- */
+.donde-encontrarnos {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #fff;
+}
+
+.donde-encontrarnos h2 {
+  font-size: 1.8em;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.donde-encontrarnos p {
+  color: #444;
+  font-size: 1.05em;
+  margin-bottom: 20px;
+}
+
+.donde-encontrarnos ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  max-width: 400px;
+  text-align: left;
+}
+
+.donde-encontrarnos ul li {
+  margin-bottom: 10px;
+  font-size: 1em;
+  color: #333;
+}
+
+/* --- FOOTER --- */
+.footer {
+  text-align: center;
+  background-color: #000;
+  color: #fff;
+  padding: 20px;
+  font-size: 0.9em;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+  .informacion-negocio img {
+    width: 90%;
+    height: auto;
+  }
+
+  .texto-nosotros h2 {
+    font-size: 1.6em;
+  }
+
+  .botones-contacto {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .botones-contacto a {
+    width: 70%;
+    margin: 0 auto;
+  }
+}

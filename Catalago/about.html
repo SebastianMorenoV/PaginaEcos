@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Acerca de Nosotros | Ecos Joyería</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="global.css" />
+    <link rel="stylesheet" type="text/css" href="about.css" />
+  </head>
+
+  <body>
+    <!-- 🧭 NAVBAR -->
+    <nav class="navbar">
+      <div class="nav-links" id="nav-links">
+        <a href="catalago.html#esclavas">Esclavas</a>
+        <a href="catalago.html#cadenas">Cadenas</a>
+        <a href="catalago.html#aretes">Aretes</a>
+        <a href="catalago.html#anillos">Anillos</a>
+        <a href="catalago.html#dijes">Dijes</a>
+        <a href="catalago.html#accesorios">Accesorios</a>
+        <a href="about.html" class="active">Acerca de Nosotros</a>
+      </div>
+      <button class="menu-button" id="menu-toggle">&#9776;</button>
+      <a href="catalago.html" class="logo-link">
+        <img src="ecosLogo.png" class="logo" alt="Logo Ecos" />
+      </a>
+    </nav>
+
+    <!-- 🧍 SECCIÓN: SOBRE NOSOTROS -->
+    <section class="informacion-negocio">
+      <img src="imgs/daryanaSebastianEcos.jpg" alt="Fundadores de Ecos" class="img-nosotros" />
+      <div class="texto-nosotros">
+        <h2>¿Quiénes somos?</h2>
+        <p>
+          Somos <strong>Ecos</strong>, una joyería digital originaria de <strong>Ciudad Obregón, Sonora</strong>.  
+          Ofrecemos joyería de uso diario y piezas únicas con el propósito de reflejar estilo y personalidad.  
+          Nos inspira crecer y llevar nuestras creaciones a más personas, tanto en línea como en puntos locales de la ciudad.
+        </p>
+      </div>
+    </section>
+
+    <!-- 💎 SECCIÓN: CÓMO COMPRAR -->
+    <section class="como-comprar">
+      <h2>¿Cómo comprar?</h2>
+      <p>Comprar en <strong>Ecos</strong> es muy sencillo:</p>
+      <ol>
+        <li>Explora nuestro catálogo y elige la joya que más te guste.</li>
+        <li>Haz clic en alguno de los botones de contacto (WhatsApp, Instagram o Facebook).</li>
+        <li>Envíanos un mensaje para confirmar tu pedido o resolver cualquier duda.</li>
+      </ol>
+      <p>Nos encanta atenderte personalmente y ayudarte a elegir la pieza perfecta ✨</p>
+
+      <div class="botones-contacto">
+        <a href="https://wa.me/526441901249" class="btn-whatsapp" target="_blank">WhatsApp</a>
+        <a href="https://www.instagram.com/ecosjoyeria" class="btn-instagram" target="_blank">Instagram</a>
+        <a href="https://www.facebook.com/ecosjoyeria" class="btn-facebook" target="_blank">Facebook</a>
+      </div>
+    </section>
+
+    <!-- 📍 SECCIÓN: DÓNDE ENCONTRARNOS -->
+    <section class="donde-encontrarnos">
+      <h2>¿Dónde encontrarnos?</h2>
+      <p>Puedes encontrar nuestros productos en los siguientes lugares de Ciudad Obregón:</p>
+      <ul id="store-list">
+        <li>Cargando ubicaciones...</li>
+      </ul>
+      <div id="map" style="height: 350px; border-radius: 10px; margin-top: 20px;"></div>
+    </section>
+
+    <!-- ⚙️ FOOTER -->
+    <footer class="footer">
+      <p>&copy; 2025 Ecos Joyería · Ciudad Obregón, Sonora</p>
+    </footer>
+
+    <!-- 🔗 GOOGLE MAPS -->
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbHxuwSFM2SaUAAbnfLkv1CFBsOMSgMic&callback=initMap"
+    ></script>
+
+    <!-- 📜 SCRIPTS -->
+    <script src="menu.js"></script>
+    <script src="about.js"></script>
+  </body>
+</html>

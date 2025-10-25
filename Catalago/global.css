@@ -1,0 +1,124 @@
+.root {
+  --border-radius: 10px;
+}
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  /* height: 100vh; <-- ELIMINADO */
+}
+.navbar {
+  display: flex;
+  justify-content: flex-start; /* Links a la izquierda */
+  align-items: center;
+  background-color: #fff;
+  padding: 20px 40px;
+  border-bottom: 1px solid #eee;
+  width: 100%;
+  position: relative; /* Para anclar el logo */
+}
+.logo-link {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%); /* Centra el logo */
+}
+.logo {
+  height: 6rem; /* Fija la altura de tu logo */
+  width: auto;
+}
+
+.nav-links {
+  display: flex; /* Alinea los links horizontalmente */
+  gap: 15px; /* Espacio entre cada link */
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  font-size: 1em;
+  padding: 5px 0;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: #007bff;
+}
+
+.menu-button {
+  display: none; /* OCULTO en desktop */
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(2, 1fr);
+}
+
+@media (max-width: 825px) {
+  .navbar {
+    padding: 10px 20px; /* Menos padding en móvil */
+    /* En móvil, justificamos diferente para dar espacio al botón */
+    justify-content: space-between;
+  }
+  .banner {
+    height: 20vh;
+  }
+  .banner h3 {
+    font-size: 1.5em;
+  }
+  .nav-links {
+    /* Aquí está la magia: se ocultan... */
+    display: none;
+
+    /* ...y se transforman en un menú vertical a pantalla completa */
+    flex-direction: column;
+    position: fixed; /* Se superpone a todo */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: white;
+
+    /* Centra los links en el menú móvil */
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .nav-links a {
+    font-size: 1.5em; /* Links más grandes para tocar */
+  }
+
+  .menu-button {
+    display: block; /* MUESTRA el botón hamburguesa */
+    z-index: 1001; /* Se asegura de que esté sobre el menú */
+    order: 1; /* Lo manda al final (derecha) */
+  }
+
+  /* El logo sigue centrado, pero los links originales (a la izq) no están */
+  .nav-links {
+    order: 2;
+  }
+
+  /* --- 3. Clase 'active' que pondrá JavaScript --- */
+
+  /* Cuando el menú esté activo, el botón (que será una 'X') se vuelve negro */
+  .menu-button.active {
+    color: #333;
+  }
+
+  /* Cuando los links estén activos, se muestran */
+  .nav-links.active {
+    display: flex;
+    z-index: 1000;
+  }
+}
