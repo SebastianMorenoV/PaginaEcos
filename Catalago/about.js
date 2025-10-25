@@ -1,22 +1,38 @@
 // --- VARIABLES GLOBALES ---
 let map;
 
-/**
- * 1. Inicializa el mapa (Función Global)
- * Google llama a esta función OBLIGATORIAMENTE porque
- * se lo pides en la URL del script.
- * La dejamos vacía para evitar el error "mapDiv null".
- * La lógica real se llama en DOMContentLoaded.
- */
+// --- Inicializa el mapa ---
+// Google llama a esta función DESPUÉS de que la API se carga.
+// Esto garantiza que el objeto "google" SÍ existe.
 function initMap() {
-  // No hacer nada aquí.
+  const obregon = { lat: 27.492, lng: -109.939 };
+  
+  // Asumimos que el <div id="map"> ya existe porque el script
+  // se carga al final del <body> o con "defer"
+  try {
+    map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 13,
+      center: obregon,
+      mapTypeControl: false,
+      streetViewControl: false,
+    });
+    
+    // Una vez creado el mapa, cargamos las tiendas
+    loadStoreLocations();
+
+  } catch (e) {
+    console.error("Error al crear el mapa. ¿El <div id='map'> existe?", e);
+  }
 }
 
-/**
- * 2. Carga de tiendas
- * Esta función ahora recibe la instancia del mapa como parámetro.
- */
-function loadStoreLocations(mapInstance) {
+// --- Carga de tiendas ---
+function loadStoreLocations() {
+  // Esta función ahora asume que la variable global 'map' ya existe.
+  if (!map) {
+    console.error("loadStoreLocations se llamó antes de que el mapa estuviera listo.");
+    return;
+  }
+  
   const tiendas = [
     {
       nombre: "Vida y Estilo ConceptStore",
@@ -44,14 +60,14 @@ function loadStoreLocations(mapInstance) {
     const position = { lat: tienda.latitud, lng: tienda.longitud };
     const marker = new google.maps.Marker({
       position,
-      map: mapInstance, // Usamos la instancia que recibimos
+      map,
       title: tienda.nombre,
     });
 
-    // --- 💡 CORRECCIÓN DE LA URL DE GOOGLE MAPS ---
-    // La URL que tenías estaba mal formada.
+    // --- 💡 CORRECCIÓN DE SINTAXIS DE LA URL ---
+    // Tu URL original tenía un error de sintaxis con encodeURIComponent
     const fallbackQuery = encodeURIComponent(tienda.nombre);
-    const mapsUrl = `http://googleusercontent.com/maps/google.com/10${fallbackQuery}&query_place_id=${tienda.place_id}`;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=$31${fallbackQuery}&query_place_id=${tienda.place_id}`;
     // --- FIN DE LA CORRECCIÓN ---
 
     const infoWindow = new google.maps.InfoWindow({
@@ -65,7 +81,7 @@ function loadStoreLocations(mapInstance) {
     });
 
     marker.addListener("click", () => {
-      infoWindow.open(mapInstance, marker); // Usamos la instancia
+      infoWindow.open(map, marker);
     });
 
     bounds.extend(position);
@@ -78,24 +94,12 @@ function loadStoreLocations(mapInstance) {
     storeList.appendChild(li);
   });
 
-  mapInstance.fitBounds(bounds); // Usamos la instancia
+  // Solo ajusta los límites si hay más de una tienda,
+  // si no, solo centra (se ve mejor).
+  if (tiendas.length > 1) {
+    map.fitBounds(bounds);
+  } else if (tiendas.length === 1) {
+    map.setCenter(bounds.getCenter());
+    map.setZoom(15); // Un zoom más cercano para una sola tienda
+  }
 }
-
-/**
- * 3. Carga Inicial Segura
- * Esto espera a que el HTML (incluido <div id="map">) esté listo
- * ANTES de intentar crear el mapa.
- */
-document.addEventListener("DOMContentLoaded", () => {
-  // 1. Ahora sí creamos el mapa, porque <div id="map"> ya existe.
-  const obregon = { lat: 27.492, lng: -109.939 };
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 13,
-    center: obregon,
-    mapTypeControl: false,
-    streetViewControl: false,
-  });
-
-  // 2. Llamamos a loadStoreLocations y le pasamos el mapa que acabamos de crear.
-  loadStoreLocations(map);
-});
