@@ -9,9 +9,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const productId = urlParams.get("id");
 
 // --- 2. Inicialización de Google Maps ---
-function initMap() {
- 
-}
+function initMap() {}
 
 // --- 3. Funciones del Slider de Imágenes ---
 function buildSlider(images) {
@@ -223,18 +221,21 @@ function displayProductDetails(data) {
   }
 }
 /**
- * Busca productos en la misma categoría.
- * @param {string} categoriaNombre - El nombre de la categoría (ej: "Cadenas")
+ * Busca productos aleatorios de *todo* el catálogo.
+ * @param {string} categoriaNombre - (Este parámetro se ignora en la nueva lógica)
  * @param {string|number} currentProductId - El ID del producto actual (para excluirlo)
  */
 async function fetchRelatedProducts(categoriaNombre, currentProductId) {
   const relatedSection = document.getElementById("related-products");
   const baseApiUrl = "https://api.ecosapp.shop";
 
-  // API URL para buscar por categoría, limitar a 4, y excluir el ID actual
-  const url = `${baseApiUrl}/api/productos/publicos?categoria=${encodeURIComponent(
-    categoriaNombre
-  )}&limite=4&excluir=${currentProductId}`;
+  // --- 💡 MODIFICACIÓN 1: Definimos cuántos mostrar y cuántos pedir ---
+  const displayLimit = 8; // Límite final de productos a mostrar
+  const poolSize = 30; // Cantidad a pedir para tener de dónde barajear
+
+  // --- 💡 MODIFICACIÓN 2: Se quitó el parámetro 'categoria' de la URL ---
+  // Ahora pide 'poolSize' (30) productos de todo el catálogo, excluyendo el actual.
+  const url = `${baseApiUrl}/api/productos/publicos?limite=${poolSize}&excluir=${currentProductId}`;
 
   try {
     const response = await fetch(url);
@@ -243,12 +244,22 @@ async function fetchRelatedProducts(categoriaNombre, currentProductId) {
     }
     const products = await response.json();
 
-    // Si tu API devuelve paginación, los productos estarán en 'products.content'
-    const productList = products.content ? products.content : products;
+    let productList = products.content ? products.content : products;
 
     if (productList && productList.length > 0) {
+      // --- 💡 MODIFICACIÓN 3: Barajear la lista (Algoritmo Fisher-Yates) ---
+      // Esto reordena la lista 'productList' de forma aleatoria.
+      for (let i = productList.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [productList[i], productList[j]] = [productList[j], productList[i]];
+      }
+
+      // --- 💡 MODIFICACIÓN 4: Cortamos la lista al límite deseado ---
+      // Tomamos los primeros 'displayLimit' (8) productos de la lista ya barajada
+      const finalProducts = productList.slice(0, displayLimit);
+
       relatedSection.style.display = "block"; // Muestra la sección
-      displayRelatedProducts(productList); // Llama a la función que los "dibuja"
+      displayRelatedProducts(finalProducts); // Llama a la función que los "dibuja"
     } else {
       // Si no hay relacionados, oculta la sección
       relatedSection.style.display = "none";
