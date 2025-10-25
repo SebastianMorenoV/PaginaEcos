@@ -218,7 +218,7 @@ function displayProductDetails(data) {
   } else {
     // Si el producto no tiene categoría, oculta la sección
     document.getElementById("related-products").style.display = "none";
-  } 
+  }
 }
 /**
  * Busca productos en la misma categoría.
@@ -343,6 +343,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       throw new Error(`Error ${response.status} al cargar el producto.`);
     }
     const productData = await response.json();
+    console.log("Datos del producto:", productData);
     displayProductDetails(productData);
   } catch (error) {
     console.error(error);
