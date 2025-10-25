@@ -1,80 +1,113 @@
 // --- VARIABLES GLOBALES ---
 let map;
 
-// --- Inicializa el mapa ---
+/**
+ * 1. Inicializa el mapa
+ * Google llama a esta función cuando termina de cargar.
+ * La dejamos vacía para evitar errores de "mapDiv null".
+ */
 function initMap() {
-  const obregon = { lat: 27.492, lng: -109.939 };
-  map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 13,
-    center: obregon,
-    mapTypeControl: false,
-    streetViewControl: false,
-  });
-
-  loadStoreLocations();
+  // No hacemos nada aquí. Crearemos el mapa en loadStoreLocations
+  // para asegurarnos de que el <div> ya existe.
 }
 
-// --- Carga de tiendas ---
-function loadStoreLocations() {
-  //AQUI ME GUSTARIA BUSCAR EN LA BASE DE DATOS TODAS LAS UBICACIONES CON PLACE_ID DE TODAS LAS TIENDAS QUE NO SEAN Ecos de Oro Joyeria
-  const tiendas = [
-    {
-      nombre: "Vida y Estilo ConceptStore",
-      direccion: "Guerrero 300 casi esquina Tamaulipas, Col. Centro, 85000 Cd. Obregón, Sonora",
-      latitud: 27.49424731192727,
-      longitud: -109.94193993061745,
-      place_id: "ChIJnU6tCUQVyIYRpibGGD9m7qI",
-    },
-    {
-      nombre: "Idalia Salón",
-      direccion: "Calle Blvd. C.T.M 136, Sonora, 85198, Cdad.Obregón, Son.",
-      latitud: 27.44981793496795,
-      longitud: -109.94054975092533,
-      place_id: "ChIJk6IxeSMWyIYRMVso2o7vXkk",
-    },
-  ];
-
+/**
+ * 2. Carga las tiendas desde la API y las pone en el mapa
+ */
+async function loadStoreLocations() {
   const storeList = document.getElementById("store-list");
-  storeList.innerHTML = "";
+  storeList.innerHTML = "<li>Cargando ubicaciones...</li>";
 
-  const bounds = new google.maps.LatLngBounds();
+  // --- 💡 INICIO DE LA MODIFICACIÓN ---
+  
+  // 1. Creamos el mapa AQUÍ, asegurándonos de que <div id="map"> existe.
+  if (!map) {
+    const obregon = { lat: 27.492, lng: -109.939 };
+    map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 13,
+      center: obregon,
+      mapTypeControl: false,
+      streetViewControl: false,
+    });
+  }
 
-  tiendas.forEach((tienda) => {
-    // Agregar marcador
-    const position = { lat: tienda.latitud, lng: tienda.longitud };
-    const marker = new google.maps.Marker({
-      position,
-      map,
-      title: tienda.nombre,
+  try {
+    // 2. Definimos la URL de tu API.
+    // DEBES CREAR ESTE ENDPOINT EN TU BACKEND
+    const baseApiUrl = "https://api.ecosapp.shop";
+    // Este endpoint debe devolver la lista de tiendas
+    // que NO son "Ecos de Oro Joyeria" y SÍ tienen place_id.
+    const url = `${baseApiUrl}/api/puntos-de-venta`; // O como se llame tu endpoint
+
+    // 3. Hacemos el fetch
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("No se pudieron cargar las ubicaciones.");
+    }
+    const tiendas = await response.json();
+
+    // 4. Verificamos si hay tiendas
+    if (!tiendas || tiendas.length === 0) {
+      storeList.innerHTML = "<li>No hay otros puntos de venta por el momento.</li>";
+      // Oculta el mapa si no hay tiendas
+      document.getElementById("map").style.display = "none";
+      return;
+    }
+
+    // 5. El resto de tu código para procesar la lista
+    storeList.innerHTML = "";
+    const bounds = new google.maps.LatLngBounds();
+
+    tiendas.forEach((tienda) => {
+      // Agregar marcador
+      const position = { lat: tienda.latitud, lng: tienda.longitud };
+      const marker = new google.maps.Marker({
+        position,
+        map,
+        title: tienda.nombre,
+      });
+
+      // CORRECCIÓN de la URL de Google Maps
+      const fallbackQuery = encodeURIComponent(tienda.nombre);
+      const mapsUrl = `https://google.com/maps/search/?api=1&query=$${fallbackQuery}&query_place_id=${tienda.place_id}`;
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `
+          <div>
+            <strong>${tienda.nombre}</strong><br>
+            ${tienda.direccion}<br>
+            <a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>
+          </div>
+        `,
+      });
+
+      marker.addListener("click", () => {
+        infoWindow.open(map, marker);
+      });
+
+      bounds.extend(position);
+
+      // Mostrar en lista
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${tienda.nombre}</strong> — 
+                      <a href="${mapsUrl}" target="_blank">Ver ubicación</a><br>
+                      ${tienda.direccion}`;
+      storeList.appendChild(li);
     });
 
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      tienda.nombre
-    )}&query_place_id=${tienda.place_id}`;
+    map.fitBounds(bounds);
 
-    const infoWindow = new google.maps.InfoWindow({
-      content: `
-        <div>
-          <strong>${tienda.nombre}</strong><br>
-          ${tienda.direccion}<br>
-          <a href="${mapsUrl}" target="_blank">Ver en Google Maps</a>
-        </div>
-      `,
-    });
-
-    marker.addListener("click", () => {
-      infoWindow.open(map, marker);
-    });
-
-    bounds.extend(position);
-
-    // Mostrar en lista
-    const li = document.createElement("li");
-    li.innerHTML = `<strong>${tienda.nombre}</strong> — 
-                    <a href="${mapsUrl}" target="_blank">Ver ubicación</a><br>
-                    ${tienda.direccion}`;
-    storeList.appendChild(li);
-  });
-
-  map.fitBounds(bounds);
+  } catch (error) {
+    console.error("Error al cargar tiendas:", error);
+    storeList.innerHTML = "<li>Error al cargar las ubicaciones. Intenta de nuevo más tarde.</li>";
+  }
+  // --- 💡 FIN DE LA MODIFICACIÓN ---
 }
+
+/**
+ * 3. Carga Inicial
+ * Espera a que el HTML esté listo y LUEGO llama a la función
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  loadStoreLocations();
+});

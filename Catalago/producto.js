@@ -221,21 +221,24 @@ function displayProductDetails(data) {
   }
 }
 /**
- * Busca productos aleatorios de *todo* el catálogo.
- * @param {string} categoriaNombre - (Este parámetro se ignora en la nueva lógica)
+ * Busca productos en la misma categoría, los barajea y muestra 8.
+ * @param {string} categoriaNombre - El nombre de la categoría (ej: "cadenas")
  * @param {string|number} currentProductId - El ID del producto actual (para excluirlo)
  */
 async function fetchRelatedProducts(categoriaNombre, currentProductId) {
   const relatedSection = document.getElementById("related-products");
   const baseApiUrl = "https://api.ecosapp.shop";
 
-  // --- 💡 MODIFICACIÓN 1: Definimos cuántos mostrar y cuántos pedir ---
+  // --- 💡 MODIFICACIÓN 1: Definimos límites ---
   const displayLimit = 8; // Límite final de productos a mostrar
   const poolSize = 30; // Cantidad a pedir para tener de dónde barajear
 
-  // --- 💡 MODIFICACIÓN 2: Se quitó el parámetro 'categoria' de la URL ---
-  // Ahora pide 'poolSize' (30) productos de todo el catálogo, excluyendo el actual.
-  const url = `${baseApiUrl}/api/productos/publicos?limite=${poolSize}&excluir=${currentProductId}`;
+  // --- 💡 MODIFICACIÓN 2: URL CORREGIDA ---
+  // Volvemos a filtrar por 'categoria'
+  // Y pedimos 'poolSize' (30) productos DE ESA CATEGORÍA
+  const url = `${baseApiUrl}/api/productos/publicos?categoria=${encodeURIComponent(
+    categoriaNombre
+  )}&limite=${poolSize}&excluir=${currentProductId}`;
 
   try {
     const response = await fetch(url);
@@ -248,7 +251,7 @@ async function fetchRelatedProducts(categoriaNombre, currentProductId) {
 
     if (productList && productList.length > 0) {
       // --- 💡 MODIFICACIÓN 3: Barajear la lista (Algoritmo Fisher-Yates) ---
-      // Esto reordena la lista 'productList' de forma aleatoria.
+      // Esto reordena la lista 'productList' (que solo tiene productos de la misma categoría)
       for (let i = productList.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [productList[i], productList[j]] = [productList[j], productList[i]];
