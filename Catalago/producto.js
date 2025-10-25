@@ -161,34 +161,74 @@ function addMarkersToMap(tiendas) {
   }
 }
 
-// --- 5. Función para Mostrar Detalles del Producto ---
+// --- 5. Función para Mostrar Detalles del Producto (MODIFICADA) ---
 function displayProductDetails(data) {
   const infoContainer = document.getElementById("product-info");
   const storeSection = document.getElementById("store-locations");
 
   document.title = `${data.nombre} - Joyeria Ecos`;
 
+  // --- INICIO DE MODIFICACIÓN (PARTE 2: Botón WhatsApp) ---
+
+  // 1. Obtenemos la URL actual de la página (ej: https://ecos.shop/producto.html?id=123)
+  const pageUrl = window.location.href;
+
+  // 2. Creamos el mensaje. El "\n" (salto de línea) es clave.
+  // WhatsApp lo convertirá en un salto de línea en el mensaje.
+  const whatsappMessage = `Hola, me interesa este producto: ${data.nombre}\n\n${pageUrl}`;
+
+  // 3. Codificamos TODO el mensaje para que sea seguro en una URL
+  const encodedMessage = encodeURIComponent(whatsappMessage);
+
+  // 4. Creamos la URL final de WhatsApp
+  const whatsappUrl = `https://wa.me/526441901249?text=${encodedMessage}`;
+
+  // 5. Inyectamos el HTML con la NUEVA URL en el botón
   infoContainer.innerHTML = `
         <h1>${data.nombre}</h1>
         <p class="price">$${Number(data.precio).toFixed(2)} MXN</p>
         <p class="description">${data.descripcion || "Sin descripción."}</p>
-        <a href="https://wa.me/526441901249?text=Hola,%20me%20interesa%20el%20producto:%20${encodeURIComponent(
-          data.nombre
-        )}" target="_blank" class="order-button">Ordenar Aquí (WhatsApp)</a>
+        <a href="${whatsappUrl}" target="_blank" class="order-button">Ordenar Aquí (WhatsApp)</a>
     `;
+  // --- FIN DE MODIFICACIÓN (PARTE 2) ---
 
+  // Esto construye el slider de imágenes (sin cambios)
   let images = [];
   if (data.foto) {
     images.push(data.foto);
   }
-  // TODO: Añadir fotos adicionales aquí cuando el backend las envíe
   if (images.length === 0) {
     images.push("placeholder.jpg");
   }
   buildSlider(images);
 
-  storeSection.style.display = "block";
-  addMarkersToMap(data.tiendasDisponibles);
+  // --- INICIO DE MODIFICACIÓN (PARTE 1: Mapa Condicional) ---
+  const tiendas = data.tiendasDisponibles;
+
+  // Verificamos si la lista de tiendas está vacía
+  const noHayTiendas = !tiendas || tiendas.length === 0;
+
+  // Verificamos si la ÚNICA tienda es "Ecos de Oro Joyeria"
+  const soloEcos = tiendas && tiendas.length === 1 && tiendas[0].nombre === "Ecos de Oro Joyeria";
+
+  if (noHayTiendas || soloEcos) {
+    // Si no hay tiendas FÍSICAS (o solo es "Ecos"), mostramos tu mensaje personalizado.
+    storeSection.style.display = "block"; // Muestra la sección
+
+    // Reemplazamos el contenido de la sección para quitar el mapa y la lista
+    storeSection.innerHTML = `
+      <h2>Puntos de Venta</h2>
+      <p class="no-store-message">
+        Este producto no se encuentra en ningun punto de venta, puedes ordenarlo a tu domicilio contactandonos haciendo click en el boton.
+      </p>
+    `;
+    // No llamamos a addMarkersToMap()
+  } else {
+    // Si hay tiendas físicas REALES, mostramos la sección y llamamos a la función del mapa
+    storeSection.style.display = "block";
+    addMarkersToMap(data.tiendasDisponibles);
+  }
+  // --- FIN DE MODIFICACIÓN (PARTE 1) ---
 }
 
 // --- 6. Carga de Datos Inicial (Dentro de DOMContentLoaded) ---

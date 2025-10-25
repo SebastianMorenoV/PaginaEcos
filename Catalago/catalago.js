@@ -127,6 +127,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 4. Lógica para los Filtros (tus links del nav)
   document.querySelectorAll(".nav-links a").forEach((link) => {
+    if (link.getAttribute("href") === "about.html") {
+      return; // Si es "about.html", no le añadimos el listener y nos lo saltamos.
+    }
     link.addEventListener("click", (e) => {
       e.preventDefault(); // Evita que la página recargue
 
