@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const bannerElement = document.querySelector(".slide-banner");
 
   // 1. Define tus imágenes. Asegúrate que la ruta 'imgs/' sea correcta.
-  const bannerImages = ["imgs/banner1.jpg", "imgs/banner2.jpg", "imgs/banner3.jpg"];
+  const bannerImages = ["Catalago/imgs/banner1.jpg", "Catalago/imgs/banner2.jpg", "Catalago/imgs/banner3.jpg"];
 
   // 2. Tu HTML empieza con 'banner3.jpg', que es el índice 2 de nuestro array (0, 1, 2)
   let currentBannerIndex = 2;
