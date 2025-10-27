@@ -181,14 +181,32 @@ function displayProductDetails(data) {
         <a href="${whatsappUrl}" target="_blank" class="order-button">Ordenar Aquí (WhatsApp)</a>
     `;
 
-  // --- Lógica del Slider ---
+  // --- Lógica del Slider (LA VERSIÓN CORRECTA) ---
   let images = [];
+
+  // 1. Añade la imagen principal (data.foto) primero
   if (data.foto) {
     images.push(data.foto);
   }
+
+  // 2. Añade todas las imágenes secundarias
+  if (data.imagenesSecundarias && data.imagenesSecundarias.length > 0) {
+    // Opcional: ordenar por la columna 'orden'
+    data.imagenesSecundarias.sort((a, b) => a.orden - b.orden);
+
+    // Extrae solo la cadena Base64 de cada objeto
+    data.imagenesSecundarias.forEach((imgObj) => {
+      // Asumiendo que el DTO de Spring envía los bytes como 'imagenData'
+      images.push(imgObj.imagenData);
+    });
+  }
+
+  // 3. Si no hay NADA, usa el placeholder
   if (images.length === 0) {
     images.push("placeholder.jpg");
   }
+
+  // 4. Llama a buildSlider con el array completo
   buildSlider(images);
 
   // --- Lógica del Mapa Condicional ---
