@@ -11,63 +11,61 @@ const productId = urlParams.get("id");
 // --- 2. Inicialización de Google Maps ---
 function initMap() {}
 
-/**
- * Inicia el slideshow automático
- */
-function startSlideShow() {
-  // Limpia cualquier intervalo anterior por si acaso
-  stopSlideShow();
-  // Llama a nextSlide cada 3 segundos
-  slideInterval = setInterval(nextSlide, 3000);
-}
-
-/**
- * Detiene el slideshow automático
- */
-function stopSlideShow() {
-  if (slideInterval) {
-    clearInterval(slideInterval);
-  }
-}
-
+// --- 3. Funciones del Slider de Imágenes ---
 function buildSlider(images) {
-  // ... (existing code) ...
+  const sliderContainer = document.getElementById("image-slider");
+  if (!images || images.length === 0) {
+    sliderContainer.innerHTML = "<p>No hay imágenes disponibles.</p>";
+    return;
+  }
+  productImages = images;
+  let sliderHTML = "";
+  let dotsHTML = "";
+  images.forEach((imgSrc, index) => {
+    const fullSrc = imgSrc.startsWith("http") ? imgSrc : `data:image/jpeg;base64,${imgSrc}`;
+    sliderHTML += `<img src="${fullSrc}" class="slider-image ${index === 0 ? "active" : ""}" alt="Producto imagen ${
+      index + 1
+    }">`;
+    dotsHTML += `<span class="slider-dot ${index === 0 ? "active" : ""}" data-index="${index}"></span>`;
+  });
+  sliderContainer.innerHTML = `
+        ${sliderHTML}
+        <div class="slider-controls">
+            <button id="prev-slide"><</button>
+            <button id="next-slide">></button>
+        </div>
+        <div class="slider-dots">
+            ${dotsHTML}
+        </div>
+    `;
+  document.getElementById("prev-slide").addEventListener("click", prevSlide);
+  document.getElementById("next-slide").addEventListener("click", nextSlide);
   document.querySelectorAll(".slider-dot").forEach((dot) => {
     dot.addEventListener("click", (e) => goToSlide(parseInt(e.target.dataset.index)));
   });
-
-  // --- 💡 INICIA EL SLIDESHOW AUTOMÁTICO ---
-  // Solo si hay más de una imagen
-  if (productImages.length > 1) {
-    startSlideShow();
-  }
 }
 
 function showSlide(index) {
-  // ... (existing code) ...
+  document.querySelectorAll(".slider-image").forEach((img, i) => {
+    img.classList.toggle("active", i === index);
+  });
+  document.querySelectorAll(".slider-dot").forEach((dot, i) => {
+    dot.classList.toggle("active", i === index);
+  });
   currentSlideIndex = index;
 }
 
 function nextSlide() {
-  // --- 💡 DETENER AL INTERACTUAR ---
-  // (Si la llamada vino del setInterval, esto no hace nada)
-  // (Si vino de un clic, detiene el ciclo)
-  if (slideInterval) stopSlideShow();
-
   let nextIndex = (currentSlideIndex + 1) % productImages.length;
   showSlide(nextIndex);
 }
 
 function prevSlide() {
-  // --- 💡 DETENER AL INTERACTUAR ---
-  stopSlideShow();
   let prevIndex = (currentSlideIndex - 1 + productImages.length) % productImages.length;
   showSlide(prevIndex);
 }
 
 function goToSlide(index) {
-  // --- 💡 DETENER AL INTERACTUAR ---
-  stopSlideShow();
   showSlide(index);
 }
 
