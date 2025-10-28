@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------------------------------------------
   // --- NUEVA LÓGICA DE LOGIN ---
   // -----------------------------------------------------------------
+  console.log("app.js cargado. Esperando DOMContentLoaded.");
 
   // Referencias al formulario de login
   const loginContainer = document.getElementById("login-container");
@@ -20,9 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Escuchamos el clic en el botón "Entrar"
   loginButton.addEventListener("click", () => {
+    console.log("--- BOTÓN 'Entrar' PRESIONADO ---");
     const password = loginPasswordInput.value;
     if (!password) {
       loginError.textContent = "Por favor, ingresa una contraseña.";
+      console.warn("Login detenido: No se ingresó contraseña.");
       return;
     }
 
@@ -30,30 +33,45 @@ document.addEventListener("DOMContentLoaded", () => {
     loginButton.disabled = true;
     loginButton.textContent = "Verificando...";
     loginError.textContent = ""; // Limpiamos errores
+    console.log("Login iniciado. Deshabilitando botón.");
 
     // 1. Creamos credenciales temporales SOLO para la prueba
     const testCredentials = btoa(`${ADMIN_USERNAME}:${password}`);
     const testAuthHeader = {
       Authorization: `Basic ${testCredentials}`,
     };
+    console.log("Credenciales 'Basic Auth' creadas.");
 
     // 2. Hacemos una llamada de prueba a un endpoint protegido
-    fetch(`${baseApiUrl}/api/ventas/progreso`, {
+    const loginUrl = `${baseApiUrl}/api/ventas/progreso`;
+    console.log("Enviando 'fetch' de autenticación a:", loginUrl);
+
+    fetch(loginUrl, {
       method: "GET",
       headers: testAuthHeader,
     })
       .then((response) => {
+        console.log("Respuesta recibida del servidor.");
+        console.log("Estado de la respuesta (response.status):", response.status);
+        console.log("Respuesta 'ok' (response.ok):", response.ok);
+
         if (response.status === 401) {
+          console.warn("Error 401: Autenticación fallida. Contraseña incorrecta.");
           throw new Error("Contraseña incorrecta.");
         }
         if (!response.ok) {
-          throw new Error("Error al conectar con el servidor.");
+          console.warn(`Respuesta NO 'ok'. Estado: ${response.status}`);
+          throw new Error(`Error del servidor: ${response.status}`);
         }
+
+        console.log("Autenticación OK. Parseando respuesta como JSON...");
         return response.json();
       })
       .then((datosProgreso) => {
+        console.log("¡LOGIN EXITOSO!");
+        console.log("Datos de progreso recibidos:", datosProgreso);
+
         // 3. ¡LOGIN EXITOSO!
-        
         // Guardamos las credenciales reales para usarlas en toda la app
         authHeadersGet = testAuthHeader;
         authHeadersPost = {
@@ -64,17 +82,39 @@ document.addEventListener("DOMContentLoaded", () => {
         // Ocultamos el login y mostramos el panel
         loginContainer.style.display = "none";
         adminPanel.style.display = "block";
+        console.log("Panel de admin mostrado.");
 
         // 4. Cargamos los datos
+        console.log("Cargando datos principales de la app...");
         actualizarVistaProgreso(datosProgreso); // Ya tenemos estos datos
         cargarProductosIniciales(); // Llamamos a la otra función de carga
       })
       .catch((error) => {
         // 5. LOGIN FALLIDO
-        loginError.textContent = error.message;
+        console.error("--- ERROR CATASTRÓFICO EN EL LOGIN ---");
+        console.error("El objeto de error es:", error);
+
+        // Este es el mensaje de error más importante
+        if (error.message.includes("Failed to fetch")) {
+          console.error(
+            "DETALLE DEL ERROR: 'Failed to fetch'. Esto casi siempre es un error de CORS o un problema de red (Firewall/Security Group)."
+          );
+          console.error(
+            "REVISA: ¿Tu backend (Spring Boot) permite la cabecera 'Authorization' desde el dominio de tu frontend?"
+          );
+          loginError.textContent =
+            "Error de red o CORS. Revisa la consola (F12).";
+        } else if (error.message.includes("Contraseña incorrecta")) {
+          console.error("DETALLE DEL ERROR: La autenticación falló (401).");
+          loginError.textContent = error.message;
+        } else {
+          console.error("DETALLE DEL ERROR: Ocurrió un error inesperado.", error.message);
+          loginError.textContent = `Error: ${error.message}`;
+        }
       })
       .finally(() => {
         // 6. Reactivamos el botón
+        console.log("--- Bloque 'finally' del login ejecutado. ---");
         loginButton.disabled = false;
         loginButton.textContent = "Entrar";
       });
@@ -142,6 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
   progressBarClickableArea.addEventListener("click", () => {
     dialog.showModal();
     salesTableBody.innerHTML = '<tr><td colspan="3">Cargando...</td></tr>';
+    console.log("Abriendo diálogo de últimas ventas. Cargando datos...");
 
     fetch(`${baseApiUrl}/api/ventas/ultimas`, {
       method: "GET",
@@ -154,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
       })
       .then((data) => {
+        console.log("Últimas ventas cargadas:", data);
         renderUltimasVentas(data);
       })
       .catch((error) => {
@@ -168,7 +210,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Función dedicada para actualizar la vista del progreso
   const actualizarVistaProgreso = (datosProgreso) => {
-    if (!datosProgreso) return;
+    if (!datosProgreso) {
+      console.warn("actualizarVistaProgreso fue llamada sin datos.");
+      return;
+    }
+    console.log("Actualizando vista de progreso...");
     const progreso = datosProgreso.progresoActual || 0;
     const porcentaje = (progreso / 1000) * 100;
     progressBarInner.style.width = `${porcentaje}%`;
@@ -190,6 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const renderProducts = (productsToRender) => {
+    console.log(`Renderizando ${productsToRender.length} productos...`);
     grid.innerHTML = "";
     productsToRender.forEach((producto) => {
       const card = document.createElement("div");
@@ -211,6 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
       grid.appendChild(card);
     });
+    console.log("Renderizado de productos completo.");
   };
 
   const filterProducts = () => {
@@ -222,6 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const openSellModal = async (productoId, productoNombre, defaultPrice) => {
+    console.log(`Abriendo modal para vender: ${productoNombre} (ID: ${productoId})`);
     modalProductName.textContent = productoNombre;
     modalProductIdInput.value = productoId;
     modalPriceInput.value = defaultPrice;
@@ -231,6 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalOverlay.classList.remove("hidden");
 
     try {
+      console.log(`Buscando inventarios para producto ID: ${productoId}`);
       const response = await fetch(
         `${baseApiUrl}/api/inventarios/producto/${productoId}`,
         {
@@ -242,28 +292,39 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!response.ok) throw new Error("No se pudieron cargar los inventarios.");
 
       const inventarios = await response.json();
+      console.log("Inventarios recibidos:", inventarios);
 
       if (inventarios.length > 0) {
         let selectHTML = '<select id="modal-store-select" required>';
+        let tiendasConStock = 0;
         inventarios.forEach((inv) => {
           if (inv.cantidad > 0) {
+            tiendasConStock++;
             selectHTML += `<option value="${inv.tienda.id}" data-max-stock="${inv.cantidad}">
-                            ${inv.tienda.nombre} (Stock: ${inv.cantidad})
-                        </option>`;
+                                ${inv.tienda.nombre} (Stock: ${inv.cantidad})
+                            </option>`;
           }
         });
         selectHTML += "</select>";
-        storeSelectorContainer.innerHTML = selectHTML;
+        
+        if(tiendasConStock > 0) {
+            storeSelectorContainer.innerHTML = selectHTML;
+            const storeSelect = document.getElementById("modal-store-select");
+            updateMaxQuantity();
+            storeSelect.addEventListener("change", updateMaxQuantity);
+        } else {
+            console.warn("El producto tiene inventarios, pero ninguno con stock > 0.");
+            storeSelectorContainer.innerHTML =
+             '<p class="error-message">Este producto está agotado en todas las tiendas.</p>';
+        }
 
-        const storeSelect = document.getElementById("modal-store-select");
-        updateMaxQuantity();
-        storeSelect.addEventListener("change", updateMaxQuantity);
       } else {
+        console.warn("El producto no está registrado en ninguna tienda.");
         storeSelectorContainer.innerHTML =
           '<p class="error-message">Este producto no está en ninguna tienda.</p>';
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error cargando inventarios del modal:", error);
       storeSelectorContainer.innerHTML = `<p class="error-message">${error.message}</p>`;
     }
   };
@@ -273,6 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (storeSelect) {
       const selectedOption = storeSelect.options[storeSelect.selectedIndex];
       modalQuantityInput.max = selectedOption.dataset.maxStock;
+      console.log(`Max. stock actualizado a: ${modalQuantityInput.max}`);
     }
   };
 
@@ -282,12 +344,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const handleSellSubmit = (event) => {
     event.preventDefault();
+    console.log("Formulario de venta enviado.");
 
     const productoId = modalProductIdInput.value;
     const storeSelect = document.getElementById("modal-store-select");
 
     if (!storeSelect) {
       alert("Por favor, selecciona una tienda válida.");
+      console.warn("Venta cancelada: No hay 'storeSelect' (probablemente no hay stock).");
       return;
     }
 
@@ -306,6 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
       cantidad: cantidad,
       precioVendido: precioVendido,
     };
+    console.log("Enviando datos de venta al API:", datosVenta);
 
     fetch(`${baseApiUrl}/api/ventas`, {
       method: "POST",
@@ -313,15 +378,18 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify(datosVenta),
     })
       .then((response) => {
+        console.log("Respuesta de /api/ventas recibida. Estado:", response.status);
         if (response.status === 401) throw new Error("Error de autenticación.");
         if (!response.ok) {
           return response.text().then((text) => {
-            throw new Error(text);
+            console.error("Error en la respuesta del servidor (texto):", text);
+            throw new Error(text || "Error desconocido del servidor");
           });
         }
         return response.json();
       })
       .then((datosProgreso) => {
+        console.log("¡Venta registrada! Nuevos datos de progreso:", datosProgreso);
         alert(`¡Venta registrada con éxito!`);
         closeSellModal();
         const ventaRecienRegistrada = datosProgreso.ventaRecienRegistrada;
@@ -338,11 +406,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const updateProductInUI = (productId, cantidadVendida) => {
+    console.log(`Actualizando UI: Producto ${productId} vendió ${cantidadVendida} unidades.`);
     const productIndex = allProducts.findIndex((p) => p.id == productId);
     if (productIndex > -1) {
       allProducts[productIndex].cantidad -= cantidadVendida;
     }
-    filterProducts();
+    filterProducts(); // Re-renderiza la lista de productos
   };
 
   // --- Asignación de Eventos ---
@@ -363,32 +432,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Carga Inicial de Datos ---
 
-  // <-- MOVIMOS ESTAS LLAMADAS DENTRO DEL LOGIN -->
-  
   // Convertimos la carga de productos en una función
   const cargarProductosIniciales = () => {
+    console.log("Iniciando 'cargarProductosIniciales'...");
     fetch(`${baseApiUrl}/api/productos`, {
       method: "GET",
       headers: authHeadersGet,
     })
       .then((response) => {
+        console.log("Respuesta de /api/productos recibida. Estado:", response.status);
         if (response.status === 401)
-          throw new Error("Error de autenticación. Revisa tus credenciales.");
+          throw new Error("Error de autenticación (401) al cargar productos.");
         if (!response.ok) throw new Error("No se pudieron cargar los productos.");
         return response.json();
       })
       .then((productos) => {
+        console.log(`Productos cargados exitosamente: ${productos.length} encontrados.`);
         allProducts = productos;
         renderProducts(allProducts);
       })
       .catch((error) => {
-        console.error("Hubo un problema al cargar los productos:", error);
+        console.error("--- ERROR en 'cargarProductosIniciales' ---");
+        console.error(error);
         grid.innerHTML = `<p class="error-message">${error.message}</p>`;
       });
   };
 
-  // Convertimos la carga de progreso en una función
+  // Esta función ya no se usa, pero la dejamos por si acaso.
+  // La llamada a progreso ya se hace en el login.
   const cargarProgresoInicial = async () => {
+    console.warn("Función 'cargarProgresoInicial' llamada (no debería ser necesario).");
     try {
       const response = await fetch(`${baseApiUrl}/api/ventas/progreso`, {
         method: "GET",
@@ -405,5 +478,5 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // YA NO LLAMAMOS A NADA AQUÍ
-  // cargarProgresoInicial(); // <-- Esta línea se fue
+  console.log("app.js: Asignación de eventos y funciones completada. Esperando login...");
 });
