@@ -221,14 +221,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const opcionesFecha = { year: "numeric", month: "long", day: "numeric" };
       const fechaFormateada = fechaVenta.toLocaleDateString("es-MX", opcionesFecha);
 
-      // --- ¡AQUÍ ESTÁ LA NUEVA VERIFICACIÓN! ---
-      // Nos aseguramos de que 'montoTotal' no sea undefined
-      const monto = venta.montoTotal || 0;
+      // --- ¡LA CORRECCIÓN DEFINITIVA! ---
+      // Usamos 'venta.precioTotal' que viene de la entidad 'Venta.java'
+      const monto = venta.precioTotal || 0;
 
       infoUltimoCiclo.textContent = `El último reparto se completó el ${fechaFormateada} con la venta #${
         venta.id
       } (Monto: $${monto.toFixed(2)}).`;
-      // --- FIN DE LA VERIFICACIÓN ---
+      // --- FIN DE LA CORRECCIÓN ---
     } else {
       infoUltimoCiclo.textContent = `Aún no se ha completado el primer reparto. ¡Vamos por ello! 🚀`;
     }
