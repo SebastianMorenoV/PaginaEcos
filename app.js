@@ -208,21 +208,27 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     console.log("Actualizando vista de progreso...");
+
+    // Verificamos 'progresoActual'
     const progreso = datosProgreso.progresoActual || 0;
     const porcentaje = (progreso / 1000) * 100;
     progressBarInner.style.width = `${porcentaje}%`;
-    progressBarText.textContent = `$${progreso.toFixed(2)} / $1000`;
+    progressBarText.textContent = `$${progreso.toFixed(2)} / $1000`; // Esto ya era seguro
+
     if (datosProgreso.ventaQueCompletoCiclo) {
       const venta = datosProgreso.ventaQueCompletoCiclo;
       const fechaVenta = new Date(venta.fechaVenta);
       const opcionesFecha = { year: "numeric", month: "long", day: "numeric" };
       const fechaFormateada = fechaVenta.toLocaleDateString("es-MX", opcionesFecha);
-      // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-      // Cambiamos 'venta.precioTotal' por 'venta.montoTotal'
+
+      // --- ¡AQUÍ ESTÁ LA NUEVA VERIFICACIÓN! ---
+      // Nos aseguramos de que 'montoTotal' no sea undefined
+      const monto = venta.montoTotal || 0;
+
       infoUltimoCiclo.textContent = `El último reparto se completó el ${fechaFormateada} con la venta #${
         venta.id
-      } (Monto: $${venta.montoTotal.toFixed(2)}).`;
-      // --- FIN DE LA CORRECCIÓN ---
+      } (Monto: $${monto.toFixed(2)}).`;
+      // --- FIN DE LA VERIFICACIÓN ---
     } else {
       infoUltimoCiclo.textContent = `Aún no se ha completado el primer reparto. ¡Vamos por ello! 🚀`;
     }
