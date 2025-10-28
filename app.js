@@ -102,8 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error(
             "REVISA: ¿Tu backend (Spring Boot) permite la cabecera 'Authorization' desde el dominio de tu frontend?"
           );
-          loginError.textContent =
-            "Error de red o CORS. Revisa la consola (F12).";
+          loginError.textContent = "Error de red o CORS. Revisa la consola (F12).";
         } else if (error.message.includes("Contraseña incorrecta")) {
           console.error("DETALLE DEL ERROR: La autenticación falló (401).");
           loginError.textContent = error.message;
@@ -133,9 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalProductIdInput = document.getElementById("modal-product-id");
   const modalQuantityInput = document.getElementById("modal-quantity");
   const modalPriceInput = document.getElementById("modal-price");
-  const storeSelectorContainer = document.getElementById(
-    "store-selector-container"
-  );
+  const storeSelectorContainer = document.getElementById("store-selector-container");
   const sellForm = document.getElementById("sell-form");
   const closeBtn = document.querySelector(".close-btn");
   const progressBarInner = document.getElementById("progress-bar-inner");
@@ -143,9 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const infoUltimoCiclo = document.getElementById("info-ultimo-ciclo");
   const dialog = document.getElementById("my-dialog");
   const closeButton = document.getElementById("close-dialog-btn");
-  const progressBarClickableArea = document.getElementById(
-    "progress-bar-clickable-area"
-  );
+  const progressBarClickableArea = document.getElementById("progress-bar-clickable-area");
   const salesTableBody = document.getElementById("sales-table-body");
 
   let allProducts = [];
@@ -155,8 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderUltimasVentas = (ventas) => {
     salesTableBody.innerHTML = "";
     if (!ventas || ventas.length === 0) {
-      salesTableBody.innerHTML =
-        '<tr><td colspan="3">No se encontraron ventas recientes.</td></tr>';
+      salesTableBody.innerHTML = '<tr><td colspan="3">No se encontraron ventas recientes.</td></tr>';
       return;
     }
     ventas.forEach((venta) => {
@@ -189,8 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
       headers: authHeadersGet,
     })
       .then((response) => {
-        if (response.status === 401)
-          throw new Error("Error de autenticación. Revisa tus credenciales.");
+        if (response.status === 401) throw new Error("Error de autenticación. Revisa tus credenciales.");
         if (!response.ok) throw new Error("No se pudieron cargar las ventas.");
         return response.json();
       })
@@ -223,13 +216,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const venta = datosProgreso.ventaQueCompletoCiclo;
       const fechaVenta = new Date(venta.fechaVenta);
       const opcionesFecha = { year: "numeric", month: "long", day: "numeric" };
-      const fechaFormateada = fechaVenta.toLocaleDateString(
-        "es-MX",
-        opcionesFecha
-      );
+      const fechaFormateada = fechaVenta.toLocaleDateString("es-MX", opcionesFecha);
+      // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+      // Cambiamos 'venta.precioTotal' por 'venta.montoTotal'
       infoUltimoCiclo.textContent = `El último reparto se completó el ${fechaFormateada} con la venta #${
         venta.id
-      } (Monto: $${venta.precioTotal.toFixed(2)}).`;
+      } (Monto: $${venta.montoTotal.toFixed(2)}).`;
+      // --- FIN DE LA CORRECCIÓN ---
     } else {
       infoUltimoCiclo.textContent = `Aún no se ha completado el primer reparto. ¡Vamos por ello! 🚀`;
     }
@@ -263,9 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const filterProducts = () => {
     const searchTerm = searchInput.value.toLowerCase();
-    const filteredProducts = allProducts.filter((p) =>
-      p.nombre.toLowerCase().includes(searchTerm)
-    );
+    const filteredProducts = allProducts.filter((p) => p.nombre.toLowerCase().includes(searchTerm));
     renderProducts(filteredProducts);
   };
 
@@ -275,19 +266,15 @@ document.addEventListener("DOMContentLoaded", () => {
     modalProductIdInput.value = productoId;
     modalPriceInput.value = defaultPrice;
     modalQuantityInput.value = "1";
-    storeSelectorContainer.innerHTML =
-      '<p class="loading-stores">Cargando tiendas...</p>';
+    storeSelectorContainer.innerHTML = '<p class="loading-stores">Cargando tiendas...</p>';
     modalOverlay.classList.remove("hidden");
 
     try {
       console.log(`Buscando inventarios para producto ID: ${productoId}`);
-      const response = await fetch(
-        `${baseApiUrl}/api/inventarios/producto/${productoId}`,
-        {
-          method: "GET",
-          headers: authHeadersGet,
-        }
-      );
+      const response = await fetch(`${baseApiUrl}/api/inventarios/producto/${productoId}`, {
+        method: "GET",
+        headers: authHeadersGet,
+      });
       if (response.status === 401) throw new Error("Error de autenticación.");
       if (!response.ok) throw new Error("No se pudieron cargar los inventarios.");
 
@@ -306,22 +293,20 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
         selectHTML += "</select>";
-        
-        if(tiendasConStock > 0) {
-            storeSelectorContainer.innerHTML = selectHTML;
-            const storeSelect = document.getElementById("modal-store-select");
-            updateMaxQuantity();
-            storeSelect.addEventListener("change", updateMaxQuantity);
-        } else {
-            console.warn("El producto tiene inventarios, pero ninguno con stock > 0.");
-            storeSelectorContainer.innerHTML =
-             '<p class="error-message">Este producto está agotado en todas las tiendas.</p>';
-        }
 
+        if (tiendasConStock > 0) {
+          storeSelectorContainer.innerHTML = selectHTML;
+          const storeSelect = document.getElementById("modal-store-select");
+          updateMaxQuantity();
+          storeSelect.addEventListener("change", updateMaxQuantity);
+        } else {
+          console.warn("El producto tiene inventarios, pero ninguno con stock > 0.");
+          storeSelectorContainer.innerHTML =
+            '<p class="error-message">Este producto está agotado en todas las tiendas.</p>';
+        }
       } else {
         console.warn("El producto no está registrado en ninguna tienda.");
-        storeSelectorContainer.innerHTML =
-          '<p class="error-message">Este producto no está en ninguna tienda.</p>';
+        storeSelectorContainer.innerHTML = '<p class="error-message">Este producto no está en ninguna tienda.</p>';
       }
     } catch (error) {
       console.error("Error cargando inventarios del modal:", error);
@@ -393,10 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(`¡Venta registrada con éxito!`);
         closeSellModal();
         const ventaRecienRegistrada = datosProgreso.ventaRecienRegistrada;
-        updateProductInUI(
-          ventaRecienRegistrada.producto.id,
-          ventaRecienRegistrada.cantidadVendida
-        );
+        updateProductInUI(ventaRecienRegistrada.producto.id, ventaRecienRegistrada.cantidadVendida);
         actualizarVistaProgreso(datosProgreso);
       })
       .catch((error) => {
@@ -441,8 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
       .then((response) => {
         console.log("Respuesta de /api/productos recibida. Estado:", response.status);
-        if (response.status === 401)
-          throw new Error("Error de autenticación (401) al cargar productos.");
+        if (response.status === 401) throw new Error("Error de autenticación (401) al cargar productos.");
         if (!response.ok) throw new Error("No se pudieron cargar los productos.");
         return response.json();
       })
