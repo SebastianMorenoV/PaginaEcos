@@ -182,33 +182,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
       fetchProducts();
     });
-  });
+  }); // 1. Definimos una variable para nuestro "temporizador" fuera de los eventos
 
-  // --- NUEVO: Lógica para el Buscador ---
+  // --- NUEVO: Lógica para el Buscador DINÁMICO (con Debounce) ---
+
+  let debounceTimer; // 2. Tu función actual. NO necesita cambios, ya funciona perfecto.
+
   function handleSearch() {
-    const searchTerm = searchInput.value.trim(); // trim() quita espacios al inicio/final
+    const searchTerm = searchInput.value.trim();
 
-    // Evita recargar si la búsqueda no cambió
     if (currentState.searchTerm === searchTerm && !currentState.category) return;
 
-    // Resetea el estado para la búsqueda
-    currentState.searchTerm = searchTerm || null; // Si está vacío, lo ponemos como null
-    currentState.category = null; // <-- NUEVO: Limpia la categoría
+    currentState.searchTerm = searchTerm || null;
+    currentState.category = null;
     currentState.page = 1;
     currentState.hasMore = true;
 
-    productGrid.innerHTML = ""; // Limpia visualmente el grid DE INMEDIATO
-    // Actualiza botón activo en .filter-buttons
+    productGrid.innerHTML = ""; // Actualiza botón activo en .filter-buttons
     document.querySelectorAll(".filter-btn").forEach((btn) => btn.classList.remove("active"));
     const matchingButton = document.querySelector(`.filter-btn[data-filter="${searchTerm.toLowerCase()}"]`);
     if (matchingButton) {
       matchingButton.classList.add("active");
     } else if (!searchTerm) {
-      document.querySelector('.filter-btn[data-filter=""]').classList.add("active"); // Activa "Todos" si borran búsqueda
+      document.querySelector('.filter-btn[data-filter=""]').classList.add("active");
     }
 
-    fetchProducts(); // Carga la primera página de la búsqueda
-  }
+    fetchProducts();
+  } // 3. ¡La Magia! Escuchamos el evento "input"
+
+  searchInput.addEventListener("input", (e) => {
+    // Cada vez que el usuario teclea algo, limpiamos el temporizador anterior
+    clearTimeout(debounceTimer); // Creamos un nuevo temporizador
+
+    debounceTimer = setTimeout(() => {
+      // Cuando pasen 400ms SIN que el usuario teclee nada nuevo,
+      // se ejecuta la búsqueda.
+      handleSearch();
+    }, 400); // 400ms es un buen tiempo de espera
+  }); // 4. (Opcional pero recomendado) Mantenemos los eventos de Click y Enter // // Por si el usuario prefiere usar el botón
+
+  searchButton.addEventListener("click", () => {
+    // Limpiamos el timer para que no se duplique la búsqueda
+    clearTimeout(debounceTimer);
+    handleSearch();
+  }); // Por si el usuario presiona "Enter"
+
+  searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      // Limpiamos el timer para que no se duplique la búsqueda
+      clearTimeout(debounceTimer);
+      handleSearch();
+    }
+  });
 
   searchButton.addEventListener("click", handleSearch);
   searchInput.addEventListener("keypress", (e) => {
