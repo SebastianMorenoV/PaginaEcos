@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   // -----------------------------------------------------------------
-  // --- LÓGICA DE LOGIN ---
+  // --- NUEVA LÓGICA DE LOGIN ---
   // -----------------------------------------------------------------
   console.log("app.js cargado. Esperando DOMContentLoaded.");
 
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const baseApiUrl = "https://api.ecosapp.shop";
   const ADMIN_USERNAME = "admin"; // El usuario es fijo
 
-  // Variables de autenticación
+  // Estas variables se llenarán DESPUÉS de un login exitoso
   let authHeadersGet = {};
   let authHeadersPost = {};
 
@@ -29,17 +29,20 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Deshabilitamos el botón para evitar doble clic
     loginButton.disabled = true;
     loginButton.textContent = "Verificando...";
-    loginError.textContent = "";
+    loginError.textContent = ""; // Limpiamos errores
     console.log("Login iniciado. Deshabilitando botón.");
 
+    // 1. Creamos credenciales temporales SOLO para la prueba
     const testCredentials = btoa(`${ADMIN_USERNAME}:${password}`);
     const testAuthHeader = {
       Authorization: `Basic ${testCredentials}`,
     };
     console.log("Credenciales 'Basic Auth' creadas.");
 
+    // 2. Hacemos una llamada de prueba a un endpoint protegido
     const loginUrl = `${baseApiUrl}/api/ventas/progreso`;
     console.log("Enviando 'fetch' de autenticación a:", loginUrl);
 
@@ -49,12 +52,18 @@ document.addEventListener("DOMContentLoaded", () => {
     })
       .then((response) => {
         console.log("Respuesta recibida del servidor.");
+        console.log("Estado de la respuesta (response.status):", response.status);
+        console.log("Respuesta 'ok' (response.ok):", response.ok);
+
         if (response.status === 401) {
+          console.warn("Error 401: Autenticación fallida. Contraseña incorrecta.");
           throw new Error("Contraseña incorrecta.");
         }
         if (!response.ok) {
+          console.warn(`Respuesta NO 'ok'. Estado: ${response.status}`);
           throw new Error(`Error del servidor: ${response.status}`);
         }
+
         console.log("Autenticación OK. Parseando respuesta como JSON...");
         return response.json();
       })
@@ -62,32 +71,48 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("¡LOGIN EXITOSO!");
         console.log("Datos de progreso recibidos:", datosProgreso);
 
+        // 3. ¡LOGIN EXITOSO!
+        // Guardamos las credenciales reales para usarlas en toda la app
         authHeadersGet = testAuthHeader;
         authHeadersPost = {
           Authorization: `Basic ${testCredentials}`,
           "Content-Type": "application/json",
         };
 
+        // Ocultamos el login y mostramos el panel
         loginContainer.style.display = "none";
         adminPanel.style.display = "block";
         console.log("Panel de admin mostrado.");
 
-        actualizarVistaProgreso(datosProgreso);
-
-        // --- ¡LLAMADA A LA LÓGICA DE CARGA ORIGINAL! ---
-        // Esta función ahora cargará todo en memoria e iniciará el renderizado por páginas.
-        cargarProductosIniciales();
+        // 4. Cargamos los datos
+        console.log("Cargando datos principales de la app...");
+        actualizarVistaProgreso(datosProgreso); // Ya tenemos estos datos
+        cargarProductosIniciales(); // Llamamos a la otra función de carga
       })
       .catch((error) => {
+        // 5. LOGIN FALLIDO
         console.error("--- ERROR CATASTRÓFICO EN EL LOGIN ---");
         console.error("El objeto de error es:", error);
+
+        // Este es el mensaje de error más importante
         if (error.message.includes("Failed to fetch")) {
+          console.error(
+            "DETALLE DEL ERROR: 'Failed to fetch'. Esto casi siempre es un error de CORS o un problema de red (Firewall/Security Group)."
+          );
+          console.error(
+            "REVISA: ¿Tu backend (Spring Boot) permite la cabecera 'Authorization' desde el dominio de tu frontend?"
+          );
           loginError.textContent = "Error de red o CORS. Revisa la consola (F12).";
+        } else if (error.message.includes("Contraseña incorrecta")) {
+          console.error("DETALLE DEL ERROR: La autenticación falló (401).");
+          loginError.textContent = error.message;
         } else {
+          console.error("DETALLE DEL ERROR: Ocurrió un error inesperado.", error.message);
           loginError.textContent = `Error: ${error.message}`;
         }
       })
       .finally(() => {
+        // 6. Reactivamos el botón
         console.log("--- Bloque 'finally' del login ejecutado. ---");
         loginButton.disabled = false;
         loginButton.textContent = "Entrar";
@@ -95,7 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // -----------------------------------------------------------------
-  // --- CÓDIGO DEL PANEL DE ADMIN ---
+  // --- TU CÓDIGO ANTERIOR COMIENZA AQUÍ ---
+  // (Ahora está "dormido" hasta que el login sea exitoso)
   // -----------------------------------------------------------------
 
   // --- Referencias a los elementos del DOM ---
@@ -117,16 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const progressBarClickableArea = document.getElementById("progress-bar-clickable-area");
   const salesTableBody = document.getElementById("sales-table-body");
 
-  // --- ¡NUEVA LÓGICA DE RENDERIZADO HÍBRIDO! ---
-  let allProducts = []; // Aquí se guardarán los 175 productos
-  let filteredProducts = []; // Aquí se guarda el resultado de la búsqueda
-  let renderPageIndex = 0; // El índice de la "página" actual que estamos mostrando
-  const renderPageSize = 20; // Cuántos productos dibujar a la vez
-  let isLoading = false; // Para evitar cargas duplicadas en el scroll
-  let searchTimer; // Para el debounce del buscador
+  let allProducts = [];
 
-  // --- Funciones (Diálogo y Progreso - SIN CAMBIOS) ---
-  // (Tu código original, funciona perfecto)
+  // --- Funciones ---
+
   const renderUltimasVentas = (ventas) => {
     salesTableBody.innerHTML = "";
     if (!ventas || ventas.length === 0) {
@@ -152,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  //Funciones de mi dialogo
   progressBarClickableArea.addEventListener("click", () => {
     dialog.showModal();
     salesTableBody.innerHTML = '<tr><td colspan="3">Cargando...</td></tr>';
@@ -180,102 +201,71 @@ document.addEventListener("DOMContentLoaded", () => {
     dialog.close();
   });
 
+  // Función dedicada para actualizar la vista del progreso
   const actualizarVistaProgreso = (datosProgreso) => {
     if (!datosProgreso) {
       console.warn("actualizarVistaProgreso fue llamada sin datos.");
       return;
     }
     console.log("Actualizando vista de progreso...");
+
+    // Verificamos 'progresoActual'
     const progreso = datosProgreso.progresoActual || 0;
     const porcentaje = (progreso / 1000) * 100;
     progressBarInner.style.width = `${porcentaje}%`;
-    progressBarText.textContent = `$${progreso.toFixed(2)} / $1000`;
+    progressBarText.textContent = `$${progreso.toFixed(2)} / $1000`; // Esto ya era seguro
 
     if (datosProgreso.ventaQueCompletoCiclo) {
       const venta = datosProgreso.ventaQueCompletoCiclo;
       const fechaVenta = new Date(venta.fechaVenta);
       const opcionesFecha = { year: "numeric", month: "long", day: "numeric" };
       const fechaFormateada = fechaVenta.toLocaleDateString("es-MX", opcionesFecha);
+
+      // --- ¡LA CORRECCIÓN DEFINITIVA! ---
+      // Usamos 'venta.precioTotal' que viene de la entidad 'Venta.java'
       const monto = venta.precioTotal || 0;
+
       infoUltimoCiclo.textContent = `El último reparto se completó el ${fechaFormateada} con la venta #${
         venta.id
       } (Monto: $${monto.toFixed(2)}).`;
+      // --- FIN DE LA CORRECCIÓN ---
     } else {
       infoUltimoCiclo.textContent = `Aún no se ha completado el primer reparto. ¡Vamos por ello! 🚀`;
     }
   };
 
-  // --- ¡REEMPLAZO! Se van 'renderProducts' y 'filterProducts' ---
-
-  // NUEVA: Función para "dibujar" UNA tarjeta de producto
-  const drawProductCardAdmin = (producto) => {
-    const card = document.createElement("div");
-    card.classList.add("product-card");
-    card.dataset.id = producto.id;
-    card.dataset.nombre = producto.nombre;
-    card.dataset.stock = producto.cantidad;
-    card.dataset.precio = producto.precio;
-    card.innerHTML = `
-            <img src="data:image/jpeg;base64,${producto.foto}" alt="${producto.nombre}">
-            <h3>${producto.nombre}</h3>
-            <div class="product-info">
-                <span class="price">$${producto.precio.toFixed(2)} MXN</span>
-                <span class="stock">Stock Total: ${producto.cantidad}</span>
-            </div>
-            <div class="product-actions">
-                <button class="sell-btn">Vender</button>
-            </div>
-        `;
-    grid.appendChild(card); // Importante: AÑADE, no borra.
-  };
-
-  // NUEVA: Función para renderizar la "siguiente página" de productos
-  const renderNextPage = () => {
-    if (isLoading) return; // Evitar cargas duplicadas
-    isLoading = true;
-    console.log(`Renderizando página del cliente #${renderPageIndex}`);
-
-    const start = renderPageIndex * renderPageSize;
-    const end = start + renderPageSize;
-
-    // Sacamos la "rebanada" de productos del array filtrado
-    const pageProducts = filteredProducts.slice(start, end);
-
-    if (pageProducts.length === 0) {
-      console.log("No hay más productos que renderizar.");
-      if (renderPageIndex === 0) {
-        // Si es la página 0 y no hay nada
-        grid.innerHTML = '<p class="info-message">No se encontraron productos.</p>';
-      }
-      isLoading = false;
-      return; // No hay más que mostrar
-    }
-
-    // Dibujamos solo esa página
-    pageProducts.forEach(drawProductCardAdmin);
-
-    renderPageIndex++; // Avanzamos el índice para la próxima llamada
-    isLoading = false;
-  };
-
-  // NUEVA: Función de búsqueda que filtra el array local
-  const filterProductsClientSide = () => {
-    const searchTerm = searchInput.value.toLowerCase();
-    console.log(`Filtrando localmente: "${searchTerm}"`);
-
-    // Filtramos el array maestro 'allProducts'
-    filteredProducts = allProducts.filter((p) => p.nombre.toLowerCase().includes(searchTerm));
-
-    // Reiniciamos el grid y la paginación
+  const renderProducts = (productsToRender) => {
+    console.log(`Renderizando ${productsToRender.length} productos...`);
     grid.innerHTML = "";
-    renderPageIndex = 0;
-
-    // Renderizamos la primera página de los resultados
-    renderNextPage();
+    productsToRender.forEach((producto) => {
+      const card = document.createElement("div");
+      card.classList.add("product-card");
+      card.dataset.id = producto.id;
+      card.dataset.nombre = producto.nombre;
+      card.dataset.stock = producto.cantidad;
+      card.dataset.precio = producto.precio;
+      card.innerHTML = `
+                <img src="data:image/jpeg;base64,${producto.foto}" alt="${producto.nombre}">
+                <h3>${producto.nombre}</h3>
+                <div class="product-info">
+                    <span class="price">$${producto.precio.toFixed(2)} MXN</span>
+                    <span class="stock">Stock Total: ${producto.cantidad}</span>
+                </div>
+                <div class="product-actions">
+                    <button class="sell-btn">Vender</button>
+                </div>
+            `;
+      grid.appendChild(card);
+    });
+    console.log("Renderizado de productos completo.");
   };
 
-  // --- Funciones del Modal (SIN CAMBIOS) ---
-  // (Tu código original, funciona perfecto)
+  const filterProducts = () => {
+    const searchTerm = searchInput.value.toLowerCase();
+    const filteredProducts = allProducts.filter((p) => p.nombre.toLowerCase().includes(searchTerm));
+    renderProducts(filteredProducts);
+  };
+
   const openSellModal = async (productoId, productoNombre, defaultPrice) => {
     console.log(`Abriendo modal para vender: ${productoNombre} (ID: ${productoId})`);
     modalProductName.textContent = productoNombre;
@@ -286,6 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalOverlay.classList.remove("hidden");
 
     try {
+      console.log(`Buscando inventarios para producto ID: ${productoId}`);
       const response = await fetch(`${baseApiUrl}/api/inventarios/producto/${productoId}`, {
         method: "GET",
         headers: authHeadersGet,
@@ -315,10 +306,12 @@ document.addEventListener("DOMContentLoaded", () => {
           updateMaxQuantity();
           storeSelect.addEventListener("change", updateMaxQuantity);
         } else {
+          console.warn("El producto tiene inventarios, pero ninguno con stock > 0.");
           storeSelectorContainer.innerHTML =
             '<p class="error-message">Este producto está agotado en todas las tiendas.</p>';
         }
       } else {
+        console.warn("El producto no está registrado en ninguna tienda.");
         storeSelectorContainer.innerHTML = '<p class="error-message">Este producto no está en ninguna tienda.</p>';
       }
     } catch (error) {
@@ -376,9 +369,11 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify(datosVenta),
     })
       .then((response) => {
+        console.log("Respuesta de /api/ventas recibida. Estado:", response.status);
         if (response.status === 401) throw new Error("Error de autenticación.");
         if (!response.ok) {
           return response.text().then((text) => {
+            console.error("Error en la respuesta del servidor (texto):", text);
             throw new Error(text || "Error desconocido del servidor");
           });
         }
@@ -389,8 +384,6 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(`¡Venta registrada con éxito!`);
         closeSellModal();
         const ventaRecienRegistrada = datosProgreso.ventaRecienRegistrada;
-
-        // --- ¡Llamada a la función MODIFICADA! ---
         updateProductInUI(ventaRecienRegistrada.producto.id, ventaRecienRegistrada.cantidadVendida);
         actualizarVistaProgreso(datosProgreso);
       })
@@ -400,50 +393,17 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   };
 
-  // --- ¡MODIFICADO! ---
-  // Esta función ahora actualiza el array 'allProducts' Y el DOM.
   const updateProductInUI = (productId, cantidadVendida) => {
     console.log(`Actualizando UI: Producto ${productId} vendió ${cantidadVendida} unidades.`);
-
-    // 1. Actualizar el array maestro
     const productIndex = allProducts.findIndex((p) => p.id == productId);
     if (productIndex > -1) {
       allProducts[productIndex].cantidad -= cantidadVendida;
     }
-
-    // 2. Actualizar el array filtrado (si es diferente)
-    if (filteredProducts !== allProducts) {
-      const filteredIndex = filteredProducts.findIndex((p) => p.id == productId);
-      if (filteredIndex > -1) {
-        filteredProducts[filteredIndex].cantidad -= cantidadVendida;
-      }
-    }
-
-    // 3. Actualizar el DOM (la tarjeta visible)
-    const card = document.querySelector(`.product-card[data-id="${productId}"]`);
-    if (card) {
-      const newStock = parseInt(card.dataset.stock, 10) - cantidadVendida;
-      card.dataset.stock = newStock;
-      const stockSpan = card.querySelector(".stock");
-      if (stockSpan) {
-        stockSpan.textContent = `Stock Total: ${newStock}`;
-      }
-    }
+    filterProducts(); // Re-renderiza la lista de productos
   };
 
   // --- Asignación de Eventos ---
-
-  // --- ¡MODIFICADO! El buscador ahora usa "debounce" y filtra localmente ---
-  searchInput.addEventListener("input", () => {
-    // Limpiamos el timer anterior
-    clearTimeout(searchTimer);
-    // Creamos un nuevo timer
-    searchTimer = setTimeout(() => {
-      filterProductsClientSide();
-    }, 400); // 400ms de espera
-  });
-
-  // (Eventos del modal - SIN CAMBIOS)
+  searchInput.addEventListener("input", filterProducts);
   grid.addEventListener("click", (event) => {
     if (event.target.classList.contains("sell-btn")) {
       const card = event.target.closest(".product-card");
@@ -458,22 +418,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   sellForm.addEventListener("submit", handleSellSubmit);
 
-  // --- ¡NUEVO! Scroll Infinito (Cliente-side) ---
-  window.addEventListener("scroll", () => {
-    // Si el usuario está cerca del final Y no estamos cargando...
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading) {
-      console.log("Llegando al final, renderizando más productos locales...");
-      renderNextPage(); // Renderiza la siguiente página del array local
-    }
-  });
-
   // --- Carga Inicial de Datos ---
 
-  // ¡MODIFICADO! Esta es la función de carga original
+  // Convertimos la carga de productos en una función
   const cargarProductosIniciales = () => {
-    console.log("Iniciando 'cargarProductosIniciales' (Carga Híbrida)...");
-    grid.innerHTML = '<p class="info-message">Cargando productos...</p>';
-
+    console.log("Iniciando 'cargarProductosIniciales'...");
     fetch(`${baseApiUrl}/api/productos`, {
       method: "GET",
       headers: authHeadersGet,
@@ -482,17 +431,12 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Respuesta de /api/productos recibida. Estado:", response.status);
         if (response.status === 401) throw new Error("Error de autenticación (401) al cargar productos.");
         if (!response.ok) throw new Error("No se pudieron cargar los productos.");
-        return response.json(); // Debería ser el ARRAY de 175 productos
+        return response.json();
       })
       .then((productos) => {
-        console.log(`Productos cargados en memoria: ${productos.length} encontrados.`);
-        allProducts = productos; // Guardamos todo en el array maestro
-        filteredProducts = allProducts; // Al inicio, la lista filtrada es igual
-
-        // ¡Importante! Limpiamos el grid y renderizamos solo la PRIMERA página
-        grid.innerHTML = "";
-        renderPageIndex = 0;
-        renderNextPage();
+        console.log(`Productos cargados exitosamente: ${productos.length} encontrados.`);
+        allProducts = productos;
+        renderProducts(allProducts);
       })
       .catch((error) => {
         console.error("--- ERROR en 'cargarProductosIniciales' ---");
@@ -502,29 +446,24 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Esta función ya no se usa, pero la dejamos por si acaso.
+  // La llamada a progreso ya se hace en el login.
   const cargarProgresoInicial = async () => {
     console.warn("Función 'cargarProgresoInicial' llamada (no debería ser necesario).");
-
     try {
       const response = await fetch(`${baseApiUrl}/api/ventas/progreso`, {
         method: "GET",
-
         headers: authHeadersGet,
       });
-
       if (response.status === 401) throw new Error("Error de autenticación.");
-
       if (!response.ok) throw new Error("Error al obtener el progreso.");
-
       const datosProgreso = await response.json();
-
       actualizarVistaProgreso(datosProgreso);
     } catch (error) {
       console.error("Error al cargar el progreso inicial:", error);
-
       infoUltimoCiclo.textContent = `No se pudo cargar el estado del progreso. ${error.message}`;
     }
   };
 
+  // YA NO LLAMAMOS A NADA AQUÍ
   console.log("app.js: Asignación de eventos y funciones completada. Esperando login...");
 });
