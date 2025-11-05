@@ -52,9 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
       .then((response) => {
         console.log("Respuesta recibida del servidor.");
-        console.log("Estado de la respuesta (response.status):", response.status);
-        console.log("Respuesta 'ok' (response.ok):", response.ok);
-
         if (response.status === 401) {
           console.warn("Error 401: Autenticación fallida. Contraseña incorrecta.");
           throw new Error("Contraseña incorrecta.");
@@ -63,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
           console.warn(`Respuesta NO 'ok'. Estado: ${response.status}`);
           throw new Error(`Error del servidor: ${response.status}`);
         }
-
         console.log("Autenticación OK. Parseando respuesta como JSON...");
         return response.json();
       })
@@ -87,27 +83,22 @@ document.addEventListener("DOMContentLoaded", () => {
         // 4. Cargamos los datos
         console.log("Cargando datos principales de la app...");
         actualizarVistaProgreso(datosProgreso); // Ya tenemos estos datos
-        cargarProductosIniciales(); // Llamamos a la otra función de carga
+
+        // --- ¡CAMBIO IMPORTANTE! ---
+        // En lugar de 'cargarProductosIniciales()', llamamos a la nueva función
+        fetchProductsAdmin();
+        // --- FIN DEL CAMBIO ---
       })
       .catch((error) => {
         // 5. LOGIN FALLIDO
         console.error("--- ERROR CATASTRÓFICO EN EL LOGIN ---");
         console.error("El objeto de error es:", error);
-
-        // Este es el mensaje de error más importante
         if (error.message.includes("Failed to fetch")) {
-          console.error(
-            "DETALLE DEL ERROR: 'Failed to fetch'. Esto casi siempre es un error de CORS o un problema de red (Firewall/Security Group)."
-          );
-          console.error(
-            "REVISA: ¿Tu backend (Spring Boot) permite la cabecera 'Authorization' desde el dominio de tu frontend?"
-          );
+          console.error("DETALLE DEL ERROR: 'Failed to fetch'. Error de CORS o red.");
           loginError.textContent = "Error de red o CORS. Revisa la consola (F12).";
         } else if (error.message.includes("Contraseña incorrecta")) {
-          console.error("DETALLE DEL ERROR: La autenticación falló (401).");
           loginError.textContent = error.message;
         } else {
-          console.error("DETALLE DEL ERROR: Ocurrió un error inesperado.", error.message);
           loginError.textContent = `Error: ${error.message}`;
         }
       })
@@ -121,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // -----------------------------------------------------------------
   // --- TU CÓDIGO ANTERIOR COMIENZA AQUÍ ---
-  // (Ahora está "dormido" hasta que el login sea exitoso)
   // -----------------------------------------------------------------
 
   // --- Referencias a los elementos del DOM ---
@@ -143,9 +133,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const progressBarClickableArea = document.getElementById("progress-bar-clickable-area");
   const salesTableBody = document.getElementById("sales-table-body");
 
-  let allProducts = [];
+  // --- ¡ELIMINADO! ---
+  // let allProducts = []; // Ya no se usa
 
-  // --- Funciones ---
+  // --- ¡NUEVO! Estado de carga (como en catalago.js) ---
+  let currentState = {
+    page: 0, // Spring Boot usa paginación base 0
+    size: 20, // Cargamos de 20 en 20
+    searchTerm: null,
+    isLoading: false,
+    hasMore: true,
+  };
+  let searchTimer; // Timer para el "debounce" del buscador
+
+  // --- Funciones (Diálogo y Progreso - SIN CAMBIOS) ---
+  // (Estas funciones son de tu código original y no necesitan cambios)
 
   const renderUltimasVentas = (ventas) => {
     salesTableBody.innerHTML = "";
@@ -172,7 +174,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  //Funciones de mi dialogo
   progressBarClickableArea.addEventListener("click", () => {
     dialog.showModal();
     salesTableBody.innerHTML = '<tr><td colspan="3">Cargando...</td></tr>';
@@ -201,7 +202,6 @@ document.addEventListener("DOMContentLoaded", () => {
     dialog.close();
   });
 
-  // Función dedicada para actualizar la vista del progreso
   const actualizarVistaProgreso = (datosProgreso) => {
     if (!datosProgreso) {
       console.warn("actualizarVistaProgreso fue llamada sin datos.");
@@ -209,62 +209,107 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     console.log("Actualizando vista de progreso...");
 
-    // Verificamos 'progresoActual'
     const progreso = datosProgreso.progresoActual || 0;
     const porcentaje = (progreso / 1000) * 100;
     progressBarInner.style.width = `${porcentaje}%`;
-    progressBarText.textContent = `$${progreso.toFixed(2)} / $1000`; // Esto ya era seguro
+    progressBarText.textContent = `$${progreso.toFixed(2)} / $1000`;
 
     if (datosProgreso.ventaQueCompletoCiclo) {
       const venta = datosProgreso.ventaQueCompletoCiclo;
       const fechaVenta = new Date(venta.fechaVenta);
       const opcionesFecha = { year: "numeric", month: "long", day: "numeric" };
       const fechaFormateada = fechaVenta.toLocaleDateString("es-MX", opcionesFecha);
-
-      // --- ¡LA CORRECCIÓN DEFINITIVA! ---
-      // Usamos 'venta.precioTotal' que viene de la entidad 'Venta.java'
       const monto = venta.precioTotal || 0;
-
       infoUltimoCiclo.textContent = `El último reparto se completó el ${fechaFormateada} con la venta #${
         venta.id
       } (Monto: $${monto.toFixed(2)}).`;
-      // --- FIN DE LA CORRECCIÓN ---
     } else {
       infoUltimoCiclo.textContent = `Aún no se ha completado el primer reparto. ¡Vamos por ello! 🚀`;
     }
   };
 
-  const renderProducts = (productsToRender) => {
-    console.log(`Renderizando ${productsToRender.length} productos...`);
-    grid.innerHTML = "";
-    productsToRender.forEach((producto) => {
-      const card = document.createElement("div");
-      card.classList.add("product-card");
-      card.dataset.id = producto.id;
-      card.dataset.nombre = producto.nombre;
-      card.dataset.stock = producto.cantidad;
-      card.dataset.precio = producto.precio;
-      card.innerHTML = `
-                <img src="data:image/jpeg;base64,${producto.foto}" alt="${producto.nombre}">
-                <h3>${producto.nombre}</h3>
-                <div class="product-info">
-                    <span class="price">$${producto.precio.toFixed(2)} MXN</span>
-                    <span class="stock">Stock Total: ${producto.cantidad}</span>
-                </div>
-                <div class="product-actions">
-                    <button class="sell-btn">Vender</button>
-                </div>
-            `;
-      grid.appendChild(card);
-    });
-    console.log("Renderizado de productos completo.");
+  // --- ¡REEMPLAZO! Se van 'renderProducts' y 'filterProducts' ---
+
+  // NUEVA: Función para "dibujar" una tarjeta (APENDE, NO REEMPLAZA)
+  // Usa el HTML exacto de tu 'renderProducts' original
+  const drawProductCardAdmin = (producto) => {
+    const card = document.createElement("div");
+    card.classList.add("product-card");
+    card.dataset.id = producto.id;
+    card.dataset.nombre = producto.nombre;
+    card.dataset.stock = producto.cantidad; // 'cantidad' es el stock total
+    card.dataset.precio = producto.precio;
+    card.innerHTML = `
+            <img src="data:image/jpeg;base64,${producto.foto}" alt="${producto.nombre}">
+            <h3>${producto.nombre}</h3>
+            <div class="product-info">
+                <span class="price">$${producto.precio.toFixed(2)} MXN</span>
+                <span class="stock">Stock Total: ${producto.cantidad}</span>
+            </div>
+            <div class="product-actions">
+                <button class="sell-btn">Vender</button>
+            </div>
+        `;
+    grid.appendChild(card); // La clave: appendChild
   };
 
-  const filterProducts = () => {
-    const searchTerm = searchInput.value.toLowerCase();
-    const filteredProducts = allProducts.filter((p) => p.nombre.toLowerCase().includes(searchTerm));
-    renderProducts(filteredProducts);
+  // NUEVA: Función principal para cargar productos (adaptada de catalago.js)
+  const fetchProductsAdmin = async () => {
+    if (currentState.isLoading || !currentState.hasMore) return;
+
+    currentState.isLoading = true;
+    console.log(`Admin: Cargando página ${currentState.page}, Búsqueda: ${currentState.searchTerm || "ninguna"}`);
+
+    // Construye la URL
+    let url = `${baseApiUrl}/api/productos?page=${currentState.page}&size=${currentState.size}`;
+    if (currentState.searchTerm) {
+      url += `&search=${encodeURIComponent(currentState.searchTerm)}`;
+    }
+
+    try {
+      // ¡Usamos los headers de autenticación!
+      const response = await fetch(url, {
+        method: "GET",
+        headers: authHeadersGet, // ¡IMPORTANTE!
+      });
+
+      if (response.status === 401) throw new Error("Error de autenticación (401).");
+      if (!response.ok) throw new Error("No se pudieron cargar los productos.");
+
+      const pageData = await response.json(); // La API devuelve un objeto Page
+      console.log("Datos de página recibidos:", pageData);
+
+      // Dibujamos los productos de esta página
+      pageData.content.forEach((producto) => {
+        drawProductCardAdmin(producto);
+      });
+
+      // Actualizamos el estado
+      currentState.page++; // Incrementamos para la próxima carga
+      currentState.hasMore = !pageData.last; // 'last' es true si es la última página
+
+      if (!currentState.hasMore) {
+        console.log("No hay más productos que cargar.");
+      }
+
+      // Mostrar mensaje si la primera página no trajo resultados
+      if (currentState.page === 1 && pageData.content.length === 0) {
+        if (currentState.searchTerm) {
+          grid.innerHTML = `<p class="info-message">No se encontraron productos para "${currentState.searchTerm}".</p>`;
+        } else {
+          grid.innerHTML = '<p class="info-message">No hay productos para mostrar.</p>';
+        }
+      }
+    } catch (error) {
+      console.error("--- ERROR en 'fetchProductsAdmin' ---", error);
+      grid.innerHTML = `<p class="error-message">${error.message}</p>`;
+    } finally {
+      currentState.isLoading = false;
+    }
   };
+
+  // --- Funciones del Modal (SIN CAMBIOS) ---
+  // (Estas funciones son de tu código original y no necesitan cambios)
 
   const openSellModal = async (productoId, productoNombre, defaultPrice) => {
     console.log(`Abriendo modal para vender: ${productoNombre} (ID: ${productoId})`);
@@ -384,6 +429,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(`¡Venta registrada con éxito!`);
         closeSellModal();
         const ventaRecienRegistrada = datosProgreso.ventaRecienRegistrada;
+
+        // --- ¡CAMBIO IMPORTANTE! ---
+        // Llamamos a la función 'updateProductInUI' modificada
         updateProductInUI(ventaRecienRegistrada.producto.id, ventaRecienRegistrada.cantidadVendida);
         actualizarVistaProgreso(datosProgreso);
       })
@@ -393,57 +441,87 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   };
 
+  // --- ¡MODIFICADO! ---
+  // Esta función ya no usa 'allProducts'. Actualiza el DOM directamente.
   const updateProductInUI = (productId, cantidadVendida) => {
     console.log(`Actualizando UI: Producto ${productId} vendió ${cantidadVendida} unidades.`);
-    const productIndex = allProducts.findIndex((p) => p.id == productId);
-    if (productIndex > -1) {
-      allProducts[productIndex].cantidad -= cantidadVendida;
+
+    // Buscamos la tarjeta directamente en el DOM
+    const card = document.querySelector(`.product-card[data-id="${productId}"]`);
+    if (card) {
+      const newStock = parseInt(card.dataset.stock, 10) - cantidadVendida;
+      card.dataset.stock = newStock; // Actualiza el data-attribute
+
+      // Actualizamos el texto visible del stock
+      const stockSpan = card.querySelector(".stock");
+      if (stockSpan) {
+        stockSpan.textContent = `Stock Total: ${newStock}`;
+      }
+    } else {
+      console.warn(`No se encontró la tarjeta del producto ${productId} para actualizar.`);
     }
-    filterProducts(); // Re-renderiza la lista de productos
   };
 
   // --- Asignación de Eventos ---
-  searchInput.addEventListener("input", filterProducts);
+
+  // --- ¡MODIFICADO! Evento del buscador con "Debounce" ---
+  searchInput.addEventListener("input", (event) => {
+    const searchTerm = event.target.value.toLowerCase().trim();
+
+    // Limpiamos el timer anterior
+    clearTimeout(searchTimer);
+
+    // Creamos un nuevo timer
+    searchTimer = setTimeout(() => {
+      // Si la búsqueda cambió, reseteamos todo
+      if (searchTerm !== (currentState.searchTerm || "")) {
+        console.log("Búsqueda cambió. Reseteando grid...");
+        currentState.searchTerm = searchTerm || null;
+        currentState.page = 0; // Reinicia a la página 0
+        currentState.hasMore = true;
+        grid.innerHTML = ""; // Limpiamos el grid
+        fetchProductsAdmin(); // Cargamos la primera página de resultados
+      }
+    }, 400); // Espera 400ms después de la última tecla
+  });
+
+  // Evento para abrir el modal de venta (Sin cambios)
   grid.addEventListener("click", (event) => {
     if (event.target.classList.contains("sell-btn")) {
       const card = event.target.closest(".product-card");
       openSellModal(card.dataset.id, card.dataset.nombre, card.dataset.precio);
     }
   });
+
+  // Eventos para cerrar el modal (Sin cambios)
   closeBtn.addEventListener("click", closeSellModal);
   modalOverlay.addEventListener("click", (event) => {
     if (event.target === modalOverlay) {
       closeSellModal();
     }
   });
+
+  // Evento para enviar el formulario de venta (Sin cambios)
   sellForm.addEventListener("submit", handleSellSubmit);
+
+  // --- ¡NUEVO! Scroll Infinito (como en catalago.js) ---
+  window.addEventListener("scroll", () => {
+    // Si el usuario está cerca del final Y no estamos cargando Y hay más por cargar...
+    if (
+      window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
+      !currentState.isLoading &&
+      currentState.hasMore
+    ) {
+      console.log("Llegando al final, cargando más productos...");
+      fetchProductsAdmin(); // Carga la siguiente página
+    }
+  });
 
   // --- Carga Inicial de Datos ---
 
-  // Convertimos la carga de productos en una función
-  const cargarProductosIniciales = () => {
-    console.log("Iniciando 'cargarProductosIniciales'...");
-    fetch(`${baseApiUrl}/api/productos`, {
-      method: "GET",
-      headers: authHeadersGet,
-    })
-      .then((response) => {
-        console.log("Respuesta de /api/productos recibida. Estado:", response.status);
-        if (response.status === 401) throw new Error("Error de autenticación (401) al cargar productos.");
-        if (!response.ok) throw new Error("No se pudieron cargar los productos.");
-        return response.json();
-      })
-      .then((productos) => {
-        console.log(`Productos cargados exitosamente: ${productos.length} encontrados.`);
-        allProducts = productos;
-        renderProducts(allProducts);
-      })
-      .catch((error) => {
-        console.error("--- ERROR en 'cargarProductosIniciales' ---");
-        console.error(error);
-        grid.innerHTML = `<p class="error-message">${error.message}</p>`;
-      });
-  };
+  // --- ¡ELIMINADO! ---
+  // La función 'cargarProductosIniciales' ya no existe.
+  // La carga ahora se dispara desde el login.
 
   // Esta función ya no se usa, pero la dejamos por si acaso.
   // La llamada a progreso ya se hace en el login.
