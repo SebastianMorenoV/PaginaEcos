@@ -37,12 +37,7 @@ function buildSlider(images) {
 
   if (images.length > 1) {
     // Construye los botones de flechas
-    controlsHTML = `
-        <div class="slider-controls">
-            <button id="prev-slide"><</button>
-            <button id="next-slide">></button>
-        </div>
-    `; // Construye los puntos
+    controlsHTML = `<div class="slider-controls"><button id="prev-slide"><</button><button id="next-slide">></button></div>`; // Construye los puntos
     dotsHTML = '<div class="slider-dots">';
     images.forEach((_, index) => {
       // Solo necesitamos el índice
@@ -50,11 +45,7 @@ function buildSlider(images) {
     });
     dotsHTML += "</div>";
   } // --- FIN DE LA MODIFICACIÓN --- // 3. Inserta todo el HTML en el contenedor // Si images.length es 1, controlsHTML y dotsHTML serán strings vacíos.
-  sliderContainer.innerHTML = `
-      ${sliderHTML}
-      ${controlsHTML}
-      ${dotsHTML}
-  `; // 4. Añade los event listeners SÓLO SI hay más de una imagen
+  sliderContainer.innerHTML = `${sliderHTML}${controlsHTML}${dotsHTML}`; // 4. Añade los event listeners SÓLO SI hay más de una imagen
 
   if (images.length > 1) {
     document.getElementById("prev-slide").addEventListener("click", prevSlide);
